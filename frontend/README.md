@@ -2,6 +2,11 @@
 
 React/Vite landing page for Queens Banquet.
 
+## Local URLs
+
+- Development: `http://localhost:5174`
+- Production preview: `http://localhost:4174`
+
 ## Key Directories
 
 - `src/components` - page sections and reusable UI components.

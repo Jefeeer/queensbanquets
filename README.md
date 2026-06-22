@@ -22,13 +22,13 @@ npm install
 npm run dev
 ```
 
-The frontend app runs from `frontend/` and is ready to connect to the API layer when backend services are implemented.
+The frontend app runs from `frontend/` at `http://localhost:5174` and is ready to connect to the API layer when backend services are implemented.
 
 ## Available Scripts
 
-- `npm run dev` - start the React landing page locally.
+- `npm run dev` - start the React landing page locally on port `5174`.
 - `npm run build` - build the frontend for production.
-- `npm run preview` - preview the production frontend build.
+- `npm run preview` - preview the production frontend build on port `4174`.
 
 ## Future Integration Notes
 
