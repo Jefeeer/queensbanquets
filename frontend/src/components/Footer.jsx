@@ -1,4 +1,5 @@
 import { useLandingContent } from '../content/LandingContentContext.jsx';
+import ScrollReveal from './ScrollReveal.jsx';
 
 function Footer() {
   const {
@@ -7,11 +8,11 @@ function Footer() {
   const emailChannel = contactChannels.find((channel) => channel.label.toLowerCase() === 'email');
 
   return (
-    <footer className="site-footer">
+    <ScrollReveal as="footer" className="site-footer" variant="fade-up">
       <p>{brand.name}</p>
       <p>Elegant weddings, refined receptions, and memorable family celebrations.</p>
       {emailChannel ? <a href={emailChannel.href}>{emailChannel.value}</a> : null}
-    </footer>
+    </ScrollReveal>
   );
 }
 

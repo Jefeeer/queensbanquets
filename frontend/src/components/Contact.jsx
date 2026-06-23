@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CalendarClock, Mail, Phone, Send, UserRound } from 'lucide-react';
 import { submitInquiry } from '../api/inquiries.js';
 import { useLandingContent } from '../content/LandingContentContext.jsx';
+import ScrollReveal from './ScrollReveal.jsx';
 import SectionHeading from './SectionHeading.jsx';
 
 const initialFormState = {
@@ -50,28 +51,30 @@ function Contact() {
 
   return (
     <section className="section contact-section" id="contact">
-      <div>
-        <SectionHeading eyebrow={contactContent.eyebrow} title={contactContent.title}>
-          {contactContent.description}
-        </SectionHeading>
+      <ScrollReveal variant="fade-left">
+        <div>
+          <SectionHeading eyebrow={contactContent.eyebrow} title={contactContent.title}>
+            {contactContent.description}
+          </SectionHeading>
 
-        <ul className="contact-list">
-          {contactChannels.map((channel) => (
-            <li key={channel.label}>
-              <span>
-                {(() => {
-                  const Icon = contactIcons[channel.label] ?? CalendarClock;
-                  return <Icon aria-hidden="true" size={18} strokeWidth={1.6} />;
-                })()}
-                {channel.label}
-              </span>
-              {channel.href ? <a href={channel.href}>{channel.value}</a> : <strong>{channel.value}</strong>}
-            </li>
-          ))}
-        </ul>
-      </div>
+          <ul className="contact-list">
+            {contactChannels.map((channel) => (
+              <li key={channel.label}>
+                <span>
+                  {(() => {
+                    const Icon = contactIcons[channel.label] ?? CalendarClock;
+                    return <Icon aria-hidden="true" size={18} strokeWidth={1.6} />;
+                  })()}
+                  {channel.label}
+                </span>
+                {channel.href ? <a href={channel.href}>{channel.value}</a> : <strong>{channel.value}</strong>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </ScrollReveal>
 
-      <form className="contact-form" onSubmit={handleSubmit}>
+      <ScrollReveal as="form" className="contact-form" delay={120} onSubmit={handleSubmit} variant="fade-right">
         <label>
           Full name
           <input
@@ -166,7 +169,7 @@ function Contact() {
         {status === 'error' ? (
           <p className="form-status form-status-error">Please try again or contact us directly.</p>
         ) : null}
-      </form>
+      </ScrollReveal>
     </section>
   );
 }

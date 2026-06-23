@@ -1,4 +1,5 @@
 import { useLandingContent } from '../content/LandingContentContext.jsx';
+import ScrollReveal from './ScrollReveal.jsx';
 import SectionHeading from './SectionHeading.jsx';
 
 function Experience() {
@@ -8,10 +9,10 @@ function Experience() {
 
   return (
     <section className="section split-section" id="experience">
-      <div className="split-panel">
+      <ScrollReveal as="div" className="split-panel" variant="fade-left">
         <span className="ornament" />
         <p>{brand.owner} coordinates the flow behind your most important moments.</p>
-      </div>
+      </ScrollReveal>
 
       <div>
         <SectionHeading
@@ -24,11 +25,11 @@ function Experience() {
         </SectionHeading>
 
         <div className="experience-grid">
-          {experiencePoints.map((point) => (
-            <article key={point.title}>
+          {experiencePoints.map((point, index) => (
+            <ScrollReveal as="article" delay={index * 120} key={point.title} variant="fade-up">
               <h3>{point.title}</h3>
               <p>{point.description}</p>
-            </article>
+            </ScrollReveal>
           ))}
         </div>
       </div>
