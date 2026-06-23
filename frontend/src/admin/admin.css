@@ -1,6 +1,8 @@
 .admin-shell,
 .admin-login-page {
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at top right, rgba(213, 168, 79, 0.2), transparent 28rem),
     linear-gradient(135deg, #fffdf7, #f8efe0 48%, #fffaf0);
@@ -74,7 +76,7 @@
 
 .admin-shell {
   display: grid;
-  grid-template-columns: 290px 1fr;
+  grid-template-columns: 290px minmax(0, 1fr);
 }
 
 .admin-sidebar {
@@ -84,6 +86,7 @@
   flex-direction: column;
   gap: 1.5rem;
   height: 100vh;
+  min-width: 0;
   padding: 1.25rem;
   border-right: 1px solid var(--line);
   background: rgba(255, 253, 247, 0.94);
@@ -171,11 +174,15 @@
   display: grid;
   align-content: start;
   gap: 1.25rem;
+  min-width: 0;
+  max-width: 100%;
   padding: clamp(1rem, 3vw, 2rem);
 }
 
 .admin-topbar,
 .admin-panel {
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: rgba(255, 253, 247, 0.84);
@@ -190,11 +197,16 @@
   padding: 1.2rem;
 }
 
+.admin-topbar > div {
+  min-width: 0;
+}
+
 .admin-topbar p {
   margin: 0 0 0.25rem;
 }
 
 .admin-topbar h1 {
+  overflow-wrap: anywhere;
   font-size: clamp(2rem, 4vw, 3.5rem);
 }
 
@@ -203,6 +215,7 @@
   flex-wrap: wrap;
   gap: 0.7rem;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .admin-primary-button,
@@ -247,7 +260,8 @@
 .admin-section-heading {
   display: grid;
   gap: 0.35rem;
-  max-width: 760px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .admin-section-heading p {
@@ -255,15 +269,17 @@
 }
 
 .admin-section-heading h2 {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem;
+  overflow-wrap: anywhere;
   font-size: clamp(1.9rem, 4vw, 3rem);
 }
 
 .admin-stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -307,16 +323,19 @@
 
 .admin-note code {
   color: var(--gold);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .admin-form-grid,
 .admin-list-editor {
   display: grid;
   gap: 1rem;
+  min-width: 0;
 }
 
 .admin-form-grid {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .admin-list-editor {
@@ -327,6 +346,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+  min-width: 0;
   padding: 1rem;
 }
 
@@ -339,6 +359,7 @@
 .admin-field {
   display: grid;
   gap: 0.5rem;
+  min-width: 0;
   color: var(--gold);
   font-size: 0.86rem;
   font-weight: 500;
@@ -347,6 +368,8 @@
 .admin-field input,
 .admin-field textarea {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid rgba(45, 36, 24, 0.16);
   border-radius: 16px;
   outline: none;
@@ -419,13 +442,16 @@
 
 @media (max-width: 1100px) {
   .admin-shell {
-    grid-template-columns: 1fr;
+    display: block;
+    width: 100%;
   }
 
   .admin-mobile-bar {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    min-width: 0;
+    max-width: 100%;
     padding: 0.85rem 1rem;
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
@@ -505,6 +531,9 @@
   }
 
   .admin-main {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     padding: clamp(0.75rem, 2vw, 1.25rem);
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
@@ -512,6 +541,11 @@
   .admin-topbar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .admin-topbar h1 {
+    font-size: clamp(1.55rem, 7vw, 2.35rem);
+    line-height: 1.08;
   }
 
   .admin-actions {
@@ -522,6 +556,7 @@
   .admin-actions .admin-primary-button,
   .admin-actions .admin-secondary-button {
     width: 100%;
+    max-width: 100%;
   }
 
   .admin-form-grid,
@@ -541,11 +576,11 @@
   }
 
   .admin-topbar h1 {
-    font-size: clamp(1.65rem, 8vw, 2.4rem);
+    font-size: clamp(1.45rem, 7vw, 2rem);
   }
 
   .admin-section-heading h2 {
-    font-size: clamp(1.55rem, 7vw, 2.2rem);
+    font-size: clamp(1.35rem, 6.5vw, 1.85rem);
   }
 
   .admin-stat-grid {

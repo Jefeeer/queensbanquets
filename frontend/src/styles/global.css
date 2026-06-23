@@ -27,6 +27,13 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+#root {
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
@@ -177,7 +184,13 @@ svg {
 .hero,
 .section {
   width: min(1180px, calc(100% - 2rem));
+  max-width: 100%;
   margin: 0 auto;
+}
+
+main {
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 .landing-splash .hero {
