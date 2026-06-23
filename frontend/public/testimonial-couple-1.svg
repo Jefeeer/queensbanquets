@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title">
+  <title id="title">Wedding couple testimonial photo placeholder</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffdf7" />
+      <stop offset="1" stop-color="#e3bd6b" />
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" rx="36" fill="url(#bg)" />
+  <circle cx="120" cy="108" r="42" fill="#090806" opacity="0.86" />
+  <circle cx="200" cy="108" r="42" fill="#2d2418" opacity="0.86" />
+  <path d="M58 260c10-58 45-91 92-91s82 33 92 91" fill="#090806" opacity="0.86" />
+  <path d="M118 260c10-58 45-91 92-91s82 33 92 91" fill="#2d2418" opacity="0.86" />
+  <path d="M160 210c18-22 44-22 62 0" fill="none" stroke="#b9852d" stroke-width="8" stroke-linecap="round" />
+</svg>

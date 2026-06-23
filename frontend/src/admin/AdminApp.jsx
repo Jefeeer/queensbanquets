@@ -423,7 +423,7 @@ function TestimonialsEditor({ draft, updateDraft }) {
       <EditorHeading title="Testimonials" description="Edit client quotes and labels." />
       <EditableCards
         items={draft.testimonials}
-        fields={['quote', 'author', 'event']}
+        fields={['quote', 'author', 'event', 'photoUrl']}
         updateDraft={updateDraft}
         path="testimonials"
         textareaFields={['quote']}
@@ -431,6 +431,7 @@ function TestimonialsEditor({ draft, updateDraft }) {
           quote: 'Add a client testimonial.',
           author: 'Client name',
           event: 'Event type',
+          photoUrl: '',
         })}
       />
     </section>
@@ -449,7 +450,7 @@ function EditableCards({ items, fields, updateDraft, path, textareaFields = ['de
                 <FieldComponent
                   key={field}
                   label={field}
-                  value={item[field]}
+                  value={item[field] ?? ''}
                   onChange={(value) => updateDraft((next) => { next[path][index][field] = value; })}
                 />
               );

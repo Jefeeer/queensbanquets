@@ -95,18 +95,21 @@ export const testimonials = [
       'Marou made our wedding day feel calm and organized. We were able to enjoy the ceremony and reception because every cue was handled.',
     author: 'Queen\'s Banquet couple',
     event: 'Wedding coordination',
+    photoUrl: '/testimonial-couple-1.svg',
   },
   {
     quote:
       'The program flowed smoothly from preparation to reception. Suppliers knew where to go and our families felt guided the whole time.',
     author: 'Client family',
     event: 'Reception program support',
+    photoUrl: '/testimonial-family-1.svg',
   },
   {
     quote:
       'Our meeting with Marou helped us understand what still needed attention. The checklist made the final weeks less stressful.',
     author: 'Bride-to-be',
     event: 'Planning consultation',
+    photoUrl: '/testimonial-bride-1.svg',
   },
 ];
 
