@@ -1,17 +1,38 @@
+import { useState } from 'react';
 import { useLandingContent } from '../content/LandingContentContext.jsx';
 import ScrollReveal from './ScrollReveal.jsx';
 import SectionHeading from './SectionHeading.jsx';
 
 function Experience() {
   const {
-    content: { brand, experiencePoints },
+    content: { experienceContent, experiencePoints },
   } = useLandingContent();
+  const [photoBroken, setPhotoBroken] = useState(false);
+
+  const panelQuote =
+    experienceContent?.panelQuote ??
+    'Marou Madrid coordinates the flow behind your most important moments.';
+  const photoUrl = experienceContent?.photoUrl ?? '';
+  const showPhoto = Boolean(photoUrl) && !photoBroken;
 
   return (
     <section className="section split-section" id="experience">
-      <ScrollReveal as="div" className="split-panel" variant="fade-left">
-        <span className="ornament" />
-        <p>{brand.owner} coordinates the flow behind your most important moments.</p>
+      <ScrollReveal
+        as="div"
+        className={`split-panel${showPhoto ? ' split-panel-has-photo' : ''}`}
+        variant="fade-left"
+      >
+        <span className="ornament" aria-hidden="true" />
+        <p>{panelQuote}</p>
+        {showPhoto ? (
+          <div className="split-panel-photo">
+            <img
+              src={photoUrl}
+              alt="Marou Madrid coordination experience"
+              onError={() => setPhotoBroken(true)}
+            />
+          </div>
+        ) : null}
       </ScrollReveal>
 
       <div>

@@ -27,6 +27,7 @@ const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD ?? 'marou-admin';
 const sidebarItems = [
   { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'brand', label: 'Brand & Hero', icon: Settings },
+  { id: 'experience', label: "Marou's Experience", icon: FileText },
   { id: 'contact', label: 'Contact Details', icon: UserRound },
   { id: 'services', label: 'Coordination Services', icon: BriefcaseBusiness },
   { id: 'packages', label: 'Packages', icon: Package },
@@ -136,6 +137,9 @@ function AdminApp() {
 
         {activeSection === 'overview' ? <Overview content={draft} /> : null}
         {activeSection === 'brand' ? <BrandHeroEditor draft={draft} updateDraft={updateDraft} /> : null}
+        {activeSection === 'experience' ? (
+          <ExperienceEditor draft={draft} updateDraft={updateDraft} />
+        ) : null}
         {activeSection === 'contact' ? <ContactEditor draft={draft} updateDraft={updateDraft} /> : null}
         {activeSection === 'services' ? <ServicesEditor draft={draft} updateDraft={updateDraft} /> : null}
         {activeSection === 'packages' ? <PackagesEditor draft={draft} updateDraft={updateDraft} /> : null}
@@ -275,6 +279,51 @@ function BrandHeroEditor({ draft, updateDraft }) {
           onChange={(value) => updateDraft((next) => { next.heroContent.copy = value; })}
         />
       </div>
+    </section>
+  );
+}
+
+function ExperienceEditor({ draft, updateDraft }) {
+  return (
+    <section className="admin-panel">
+      <EditorHeading
+        title="Marou's coordination experience"
+        description="Edit the featured panel quote, photo, and experience cards."
+      />
+
+      <div className="admin-form-grid">
+        <AdminTextarea
+          label="Featured panel quote"
+          value={draft.experienceContent?.panelQuote ?? ''}
+          onChange={(value) =>
+            updateDraft((next) => {
+              next.experienceContent ??= { panelQuote: '', photoUrl: '' };
+              next.experienceContent.panelQuote = value;
+            })
+          }
+        />
+        <AdminPhotoField
+          label="Featured panel photo"
+          value={draft.experienceContent?.photoUrl ?? ''}
+          onChange={(value) =>
+            updateDraft((next) => {
+              next.experienceContent ??= { panelQuote: '', photoUrl: '' };
+              next.experienceContent.photoUrl = value;
+            })
+          }
+        />
+      </div>
+
+      <EditableCards
+        items={draft.experiencePoints}
+        fields={['title', 'description']}
+        updateDraft={updateDraft}
+        path="experiencePoints"
+        createItem={() => ({
+          title: 'New experience highlight',
+          description: 'Describe this coordination strength.',
+        })}
+      />
     </section>
   );
 }

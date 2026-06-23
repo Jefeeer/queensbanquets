@@ -71,6 +71,11 @@ export const packages = [
   },
 ];
 
+export const experienceContent = {
+  panelQuote: 'Marou Madrid coordinates the flow behind your most important moments.',
+  photoUrl: '',
+};
+
 export const experiencePoints = [
   {
     title: 'Experienced coordinator',
@@ -137,6 +142,7 @@ export const defaultLandingContent = {
   services,
   galleryMoments,
   packages,
+  experienceContent,
   experiencePoints,
   testimonials,
   contactChannels,
