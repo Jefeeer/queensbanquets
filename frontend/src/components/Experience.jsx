@@ -22,8 +22,6 @@ function Experience() {
         className={`split-panel${showPhoto ? ' split-panel-has-photo' : ''}`}
         variant="fade-left"
       >
-        <span className="ornament" aria-hidden="true" />
-        <p>{panelQuote}</p>
         {showPhoto ? (
           <div className="split-panel-photo">
             <img
@@ -31,8 +29,11 @@ function Experience() {
               alt="Marou Madrid coordination experience"
               onError={() => setPhotoBroken(true)}
             />
+            <div className="split-panel-overlay" aria-hidden="true" />
           </div>
         ) : null}
+        <span className="ornament" aria-hidden="true" />
+        <p>{panelQuote}</p>
       </ScrollReveal>
 
       <div>
