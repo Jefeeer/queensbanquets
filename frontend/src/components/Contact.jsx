@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { submitInquiry } from '../api/inquiries.js';
-import { brand, contactChannels } from '../data/siteContent.js';
+import { useLandingContent } from '../content/LandingContentContext.jsx';
 import SectionHeading from './SectionHeading.jsx';
 
 const initialFormState = {
@@ -15,6 +15,9 @@ const initialFormState = {
 };
 
 function Contact() {
+  const {
+    content: { contactChannels, contactContent },
+  } = useLandingContent();
   const [formData, setFormData] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
 
@@ -39,10 +42,8 @@ function Contact() {
   return (
     <section className="section contact-section" id="contact">
       <div>
-        <SectionHeading eyebrow="Schedule a date" title="Book a coordination meeting with Marou.">
-          Contact {brand.owner} directly or request a meeting date through the
-          form. Share your wedding or event details so Marou can prepare the
-          right coordination guidance.
+        <SectionHeading eyebrow={contactContent.eyebrow} title={contactContent.title}>
+          {contactContent.description}
         </SectionHeading>
 
         <ul className="contact-list">
@@ -144,7 +145,7 @@ function Contact() {
         </button>
 
         {status === 'success' ? (
-          <p className="form-status">Thank you. Your meeting request is ready for Queen's Banquet Events.</p>
+          <p className="form-status">{contactContent.successMessage}</p>
         ) : null}
         {status === 'error' ? (
           <p className="form-status form-status-error">Please try again or contact us directly.</p>

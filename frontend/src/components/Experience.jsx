@@ -1,7 +1,11 @@
-import { brand, experiencePoints } from '../data/siteContent.js';
+import { useLandingContent } from '../content/LandingContentContext.jsx';
 import SectionHeading from './SectionHeading.jsx';
 
 function Experience() {
+  const {
+    content: { brand, experiencePoints },
+  } = useLandingContent();
+
   return (
     <section className="section split-section" id="experience">
       <div className="split-panel">

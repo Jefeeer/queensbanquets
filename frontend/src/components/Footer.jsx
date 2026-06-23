@@ -1,11 +1,16 @@
-import { brand } from '../data/siteContent.js';
+import { useLandingContent } from '../content/LandingContentContext.jsx';
 
 function Footer() {
+  const {
+    content: { brand, contactChannels },
+  } = useLandingContent();
+  const emailChannel = contactChannels.find((channel) => channel.label.toLowerCase() === 'email');
+
   return (
     <footer className="site-footer">
       <p>{brand.name}</p>
       <p>Elegant weddings, refined receptions, and memorable family celebrations.</p>
-      <a href="mailto:queensbanquet07@gmail.com">queensbanquet07@gmail.com</a>
+      {emailChannel ? <a href={emailChannel.href}>{emailChannel.value}</a> : null}
     </footer>
   );
 }

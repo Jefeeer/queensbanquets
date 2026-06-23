@@ -12,6 +12,15 @@ export const brand = {
   logo: '/queens-banquet-logo.svg',
 };
 
+export const heroContent = {
+  eyebrow: "Queen's Banquet Events",
+  title: 'Wedding coordination for calm, graceful celebrations.',
+  copy:
+    "Queen's Banquet Events is a coordination service led by Marou Madrid, helping couples organize timelines, suppliers, family cues, and program flow so the wedding day feels elegant, personal, and well-managed.",
+  primaryCta: 'Book a Meeting',
+  secondaryCta: 'Read Testimonials',
+};
+
 export const highlights = [
   { value: '1:1', label: 'Hands-on guidance from Marou' },
   { value: 'Calm', label: 'Program and supplier coordination' },
@@ -108,3 +117,25 @@ export const contactChannels = [
   { label: 'Landline', value: '046 489 3887', href: 'tel:+63464893887' },
   { label: 'Email', value: 'queensbanquet07@gmail.com', href: 'mailto:queensbanquet07@gmail.com' },
 ];
+
+export const contactContent = {
+  eyebrow: 'Schedule a date',
+  title: 'Book a coordination meeting with Marou.',
+  description:
+    'Contact Marou Madrid directly or request a meeting date through the form. Share your wedding or event details so Marou can prepare the right coordination guidance.',
+  successMessage: "Thank you. Your meeting request is ready for Queen's Banquet Events.",
+};
+
+export const defaultLandingContent = {
+  navigationItems,
+  brand,
+  heroContent,
+  highlights,
+  services,
+  galleryMoments,
+  packages,
+  experiencePoints,
+  testimonials,
+  contactChannels,
+  contactContent,
+};

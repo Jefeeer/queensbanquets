@@ -1,6 +1,10 @@
-import { brand, navigationItems } from '../data/siteContent.js';
+import { useLandingContent } from '../content/LandingContentContext.jsx';
 
 function Header() {
+  const {
+    content: { brand, navigationItems },
+  } = useLandingContent();
+
   return (
     <header className="site-header">
       <a className="brand" href="#top" aria-label="Queen's Banquet Events home">

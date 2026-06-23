@@ -24,6 +24,23 @@ npm run dev
 
 The frontend app runs from `frontend/` at `http://localhost:5174` and is ready to connect to the API layer when backend services are implemented.
 
+## Admin Page
+
+The admin page is hidden from the landing page navigation and can be opened directly:
+
+```text
+http://localhost:5174/admin
+```
+
+Temporary local credentials are controlled by `VITE_ADMIN_EMAIL` and `VITE_ADMIN_PASSWORD`. Until backend authentication and database persistence are added, admin edits are saved in the browser's local storage.
+
+Default local credentials:
+
+```text
+Email: queensbanquet07@gmail.com
+Password: marou-admin
+```
+
 ## Available Scripts
 
 - `npm run dev` - start the React landing page locally on port `5174`.

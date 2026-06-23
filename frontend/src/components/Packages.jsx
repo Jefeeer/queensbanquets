@@ -1,7 +1,11 @@
-import { packages } from '../data/siteContent.js';
+import { useLandingContent } from '../content/LandingContentContext.jsx';
 import SectionHeading from './SectionHeading.jsx';
 
 function Packages() {
+  const {
+    content: { packages },
+  } = useLandingContent();
+
   return (
     <section className="section" id="packages">
       <SectionHeading eyebrow="Coordination packages" title="Choose the level of guidance you need.">

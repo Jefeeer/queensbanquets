@@ -1,24 +1,24 @@
-import { brand, highlights } from '../data/siteContent.js';
+import { useLandingContent } from '../content/LandingContentContext.jsx';
 
 function Hero() {
+  const {
+    content: { brand, heroContent, highlights },
+  } = useLandingContent();
+
   return (
     <section className="hero" id="top">
       <div className="hero-content">
-        <p className="eyebrow">Queen's Banquet Events</p>
-        <h1>Wedding coordination for calm, graceful celebrations.</h1>
-        <p className="hero-copy">
-          Queen's Banquet Events is a coordination service led by Marou Madrid,
-          helping couples organize timelines, suppliers, family cues, and program
-          flow so the wedding day feels elegant, personal, and well-managed.
-        </p>
+        <p className="eyebrow">{heroContent.eyebrow}</p>
+        <h1>{heroContent.title}</h1>
+        <p className="hero-copy">{heroContent.copy}</p>
         <p className="owner-line">Owned and managed by {brand.owner}</p>
 
         <div className="hero-actions">
           <a className="button button-primary" href="#contact">
-            Book a Meeting
+            {heroContent.primaryCta}
           </a>
           <a className="button button-secondary" href="#testimonials">
-            Read Testimonials
+            {heroContent.secondaryCta}
           </a>
         </div>
 

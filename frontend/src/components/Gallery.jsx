@@ -1,7 +1,11 @@
-import { galleryMoments } from '../data/siteContent.js';
+import { useLandingContent } from '../content/LandingContentContext.jsx';
 import SectionHeading from './SectionHeading.jsx';
 
 function Gallery() {
+  const {
+    content: { galleryMoments },
+  } = useLandingContent();
+
   return (
     <section className="section gallery-section" id="gallery">
       <SectionHeading eyebrow="Coordination moments" title="The quiet details that make events feel effortless.">

@@ -1,7 +1,11 @@
-import { services } from '../data/siteContent.js';
+import { useLandingContent } from '../content/LandingContentContext.jsx';
 import SectionHeading from './SectionHeading.jsx';
 
 function Services() {
+  const {
+    content: { services },
+  } = useLandingContent();
+
   return (
     <section className="section" id="services">
       <SectionHeading eyebrow="Coordination services" title="Support for the flow of your celebration.">

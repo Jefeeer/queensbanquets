@@ -1,7 +1,11 @@
-import { testimonials } from '../data/siteContent.js';
+import { useLandingContent } from '../content/LandingContentContext.jsx';
 import SectionHeading from './SectionHeading.jsx';
 
 function Testimonials() {
+  const {
+    content: { testimonials },
+  } = useLandingContent();
+
   return (
     <section className="section testimonials-section" id="testimonials">
       <SectionHeading eyebrow="Client testimonials" title="Words from couples and families.">
