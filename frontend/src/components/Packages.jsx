@@ -4,9 +4,9 @@ import SectionHeading from './SectionHeading.jsx';
 function Packages() {
   return (
     <section className="section" id="packages">
-      <SectionHeading eyebrow="Celebration tiers" title="Packages prepared for future booking workflows.">
-        These cards can later map directly to API-provided package records and
-        booking availability.
+      <SectionHeading eyebrow="Coordination packages" title="Choose the level of guidance you need.">
+        Start with a planning consultation, book coordination for the wedding
+        day, or request fuller support for meetings, timelines, and program flow.
       </SectionHeading>
 
       <div className="package-grid">

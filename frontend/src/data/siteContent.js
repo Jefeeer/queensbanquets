@@ -1,9 +1,9 @@
 export const navigationItems = [
-  { label: 'Experience', href: '#experience' },
-  { label: 'Services', href: '#services' },
-  { label: 'Gallery', href: '#gallery' },
+  { label: "Marou's Experience", href: '#experience' },
+  { label: 'Coordination', href: '#services' },
+  { label: 'Testimonials', href: '#testimonials' },
   { label: 'Packages', href: '#packages' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Book a Meeting', href: '#contact' },
 ];
 
 export const brand = {
@@ -13,52 +13,91 @@ export const brand = {
 };
 
 export const highlights = [
-  { value: '350+', label: 'Seated guest capacity' },
-  { value: '24k', label: 'Gold-inspired details' },
-  { value: '12', label: 'Signature wedding layouts' },
+  { value: '1:1', label: 'Hands-on guidance from Marou' },
+  { value: 'Calm', label: 'Program and supplier coordination' },
+  { value: 'Booked', label: 'Meeting schedules for couples' },
 ];
 
 export const services = [
   {
-    title: 'Ceremony Styling',
+    title: 'Wedding Coordination',
     description:
-      'Ivory florals, candlelit aisles, custom arches, and gold accents designed around your wedding story.',
+      'Marou helps align your ceremony flow, reception program, suppliers, and family cues so the day feels organized and graceful.',
   },
   {
-    title: 'Reception Planning',
+    title: 'On-the-Day Coordination',
     description:
-      'Elegant dining layouts, premium tablescapes, and a hospitality flow built for effortless celebration.',
+      'A focused event-day service for couples who have planned the details and need a steady coordinator to manage timing and movement.',
   },
   {
-    title: 'Banquet Catering',
+    title: 'Meeting and Supplier Alignment',
     description:
-      'A refined menu experience prepared for weddings, engagement parties, rehearsal dinners, and family banquets.',
+      'Schedule planning meetings, review supplier responsibilities, and prepare the wedding timeline before the celebration begins.',
   },
 ];
 
 export const galleryMoments = [
-  'Grand Ballroom',
-  'Candlelight Dinner',
-  'Royal Sweetheart Table',
-  'Ivory Floral Aisle',
+  'Program Flow',
+  'Supplier Briefing',
+  'Ceremony Cues',
+  'Family Guidance',
 ];
 
 export const packages = [
   {
-    name: 'Ivory Promise',
-    price: 'Essential',
-    features: ['Ceremony setup', 'Reception seating plan', 'Event-day coordination'],
+    name: 'Ivory Guidance',
+    price: 'Consultation',
+    features: ['Initial planning meeting', 'Coordination checklist', 'Program review'],
   },
   {
-    name: 'Golden Vow',
+    name: 'Golden Coordination',
     price: 'Signature',
-    features: ['Premium decor styling', 'Full banquet service', 'Custom floral concept'],
+    features: ['Supplier alignment', 'Wedding timeline', 'On-the-day coordination'],
     featured: true,
   },
   {
-    name: 'Royal Banquet',
-    price: 'Luxury',
-    features: ['End-to-end planning', 'VIP guest experience', 'Bespoke culinary service'],
+    name: 'Royal Full Coordination',
+    price: 'Complete',
+    features: ['Planning meetings', 'Family and entourage cues', 'Reception program flow'],
+  },
+];
+
+export const experiencePoints = [
+  {
+    title: 'Experienced coordinator',
+    description:
+      'Marou Madrid guides couples through the details that affect the real wedding-day flow: timing, suppliers, family movement, and program cues.',
+  },
+  {
+    title: 'Calm event leadership',
+    description:
+      'The coordination approach is steady and respectful, keeping the couple, entourage, suppliers, and guests aligned throughout the celebration.',
+  },
+  {
+    title: 'Prepared before the date',
+    description:
+      'Meetings and checklists are used before the event so expectations are clear before the ceremony and reception begin.',
+  },
+];
+
+export const testimonials = [
+  {
+    quote:
+      'Marou made our wedding day feel calm and organized. We were able to enjoy the ceremony and reception because every cue was handled.',
+    author: 'Queen\'s Banquet couple',
+    event: 'Wedding coordination',
+  },
+  {
+    quote:
+      'The program flowed smoothly from preparation to reception. Suppliers knew where to go and our families felt guided the whole time.',
+    author: 'Client family',
+    event: 'Reception program support',
+  },
+  {
+    quote:
+      'Our meeting with Marou helped us understand what still needed attention. The checklist made the final weeks less stressful.',
+    author: 'Bride-to-be',
+    event: 'Planning consultation',
   },
 ];
 

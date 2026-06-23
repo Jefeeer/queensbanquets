@@ -6,7 +6,10 @@ import SectionHeading from './SectionHeading.jsx';
 const initialFormState = {
   name: '',
   email: '',
+  phone: '',
+  meetingDate: '',
   eventDate: '',
+  coordinationNeed: 'Wedding coordination',
   guests: '',
   message: '',
 };
@@ -36,9 +39,10 @@ function Contact() {
   return (
     <section className="section contact-section" id="contact">
       <div>
-        <SectionHeading eyebrow="Begin the celebration" title="Request a private consultation.">
-          Contact {brand.owner} directly or share your wedding vision and guest
-          count through the inquiry form.
+        <SectionHeading eyebrow="Schedule a date" title="Book a coordination meeting with Marou.">
+          Contact {brand.owner} directly or request a meeting date through the
+          form. Share your wedding or event details so Marou can prepare the
+          right coordination guidance.
         </SectionHeading>
 
         <ul className="contact-list">
@@ -73,9 +77,38 @@ function Contact() {
             required
           />
         </label>
+        <label>
+          Phone or Viber
+          <input
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="0917 767 7812"
+          />
+        </label>
         <div className="form-row">
           <label>
-            Event date
+            Preferred meeting date
+            <input
+              name="meetingDate"
+              type="date"
+              value={formData.meetingDate}
+              onChange={handleChange}
+            />
+          </label>
+          <label>
+            Coordination need
+            <select name="coordinationNeed" value={formData.coordinationNeed} onChange={handleChange}>
+              <option>Wedding coordination</option>
+              <option>On-the-day coordination</option>
+              <option>Planning consultation</option>
+              <option>Reception program support</option>
+            </select>
+          </label>
+        </div>
+        <div className="form-row">
+          <label>
+            Wedding or event date
             <input
               name="eventDate"
               type="date"
@@ -96,22 +129,22 @@ function Contact() {
           </label>
         </div>
         <label>
-          Wedding vision
+          Notes for Marou
           <textarea
             name="message"
             value={formData.message}
             onChange={handleChange}
-            placeholder="Tell us about your ceremony, reception, and banquet style."
+            placeholder="Tell us what coordination help you need, your venue, supplier status, and program concerns."
             rows="5"
           />
         </label>
 
         <button className="button button-primary" type="submit" disabled={status === 'submitting'}>
-          {status === 'submitting' ? 'Sending...' : 'Send Inquiry'}
+          {status === 'submitting' ? 'Sending...' : 'Request Meeting'}
         </button>
 
         {status === 'success' ? (
-          <p className="form-status">Thank you. Your inquiry is ready for Queen's Banquet Events.</p>
+          <p className="form-status">Thank you. Your meeting request is ready for Queen's Banquet Events.</p>
         ) : null}
         {status === 'error' ? (
           <p className="form-status form-status-error">Please try again or contact us directly.</p>

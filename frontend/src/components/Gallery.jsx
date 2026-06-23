@@ -4,9 +4,9 @@ import SectionHeading from './SectionHeading.jsx';
 function Gallery() {
   return (
     <section className="section gallery-section" id="gallery">
-      <SectionHeading eyebrow="Portfolio" title="A glimpse into the Queen's Banquet Events atmosphere.">
-        The visual system uses layered black, antique gold, and warm ivory to
-        evoke a luxury wedding venue without relying on stock photography.
+      <SectionHeading eyebrow="Coordination moments" title="The quiet details that make events feel effortless.">
+        From supplier briefing to ceremony cues, coordination keeps each moment
+        clear while the couple and guests enjoy the celebration.
       </SectionHeading>
 
       <div className="gallery-grid">

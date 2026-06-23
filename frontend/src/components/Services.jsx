@@ -4,9 +4,9 @@ import SectionHeading from './SectionHeading.jsx';
 function Services() {
   return (
     <section className="section" id="services">
-      <SectionHeading eyebrow="Curated services" title="Wedding support from concept to celebration.">
-        Choose individual services or combine them into a complete banquet
-        experience.
+      <SectionHeading eyebrow="Coordination services" title="Support for the flow of your celebration.">
+        Choose consultation, on-the-day coordination, or fuller planning support
+        depending on what your wedding or event still needs.
       </SectionHeading>
 
       <div className="card-grid">

@@ -8,7 +8,7 @@ Queen's Banquet Events is organized as a layered web system so the landing page 
 
 - Location: `frontend/`
 - Technology: React, Vite, HTML, CSS, JavaScript
-- Responsibility: Marketing landing page, package presentation, gallery-style visual sections, and inquiry form UX.
+- Responsibility: Marketing landing page, coordination package presentation, testimonial sections, and meeting-booking UX.
 - API boundary: `frontend/src/api/inquiries.js`
 
 ### API
@@ -28,12 +28,12 @@ Queen's Banquet Events is organized as a layered web system so the landing page 
 
 - Location: `database/`
 - Technology: SQL, PostgreSQL-oriented migration scripts
-- Responsibility: Inquiry persistence, package data, and future venue availability records.
+- Responsibility: Inquiry persistence, coordination package data, and future meeting schedule records.
 
-## Initial Inquiry Flow
+## Initial Meeting Request Flow
 
 ```text
-Contact form
+Book a meeting form
   -> frontend/src/api/inquiries.js
   -> POST /inquiries
   -> api controller and schema validation

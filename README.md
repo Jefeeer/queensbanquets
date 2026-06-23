@@ -1,6 +1,6 @@
 # Queen's Banquet Events
 
-Queen's Banquet Events is an elegant wedding and event landing-page system designed with a black, gold, and ivory palette. The repository is structured for a React frontend today and future API, backend, and database integration.
+Queen's Banquet Events is an elegant wedding and event coordination landing-page system designed with a black, gold, and ivory palette. The repository is structured for a React frontend today and future API, backend, and database integration.
 
 ## System Structure
 

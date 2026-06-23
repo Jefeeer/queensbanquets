@@ -1,3 +1,4 @@
+import { brand, experiencePoints } from '../data/siteContent.js';
 import SectionHeading from './SectionHeading.jsx';
 
 function Experience() {
@@ -5,31 +6,26 @@ function Experience() {
     <section className="section split-section" id="experience">
       <div className="split-panel">
         <span className="ornament" />
-        <p>Designed for ceremonies, receptions, and family banquets.</p>
+        <p>{brand.owner} coordinates the flow behind your most important moments.</p>
       </div>
 
       <div>
         <SectionHeading
-          eyebrow="The Queen's Banquet Events experience"
-          title="A refined wedding setting with thoughtful flow."
+          eyebrow="Marou's coordination experience"
+          title="Experienced guidance before and during your event."
         >
-          From the first champagne welcome to the last dance, the experience is
-          shaped around comfort, beauty, and celebration.
+          Queen's Banquet Events focuses on coordination, not owning the entire
+          event. Marou helps bring your plans, suppliers, program, and family
+          movement together with clarity.
         </SectionHeading>
 
         <div className="experience-grid">
-          <article>
-            <h3>Grand arrival</h3>
-            <p>Guests are welcomed through a dramatic black-and-gold entryway.</p>
-          </article>
-          <article>
-            <h3>Elegant dining</h3>
-            <p>Ivory linens, gold place settings, and warm lighting set the tone.</p>
-          </article>
-          <article>
-            <h3>Seamless moments</h3>
-            <p>Prepared spaces for portraits, speeches, cake cutting, and dancing.</p>
-          </article>
+          {experiencePoints.map((point) => (
+            <article key={point.title}>
+              <h3>{point.title}</h3>
+              <p>{point.description}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>

@@ -53,6 +53,7 @@ a {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
@@ -260,6 +261,7 @@ h3 {
 .hero-highlights div,
 .service-card,
 .package-card,
+.testimonial-card,
 .contact-form,
 .experience-grid article {
   border: 1px solid var(--line);
@@ -416,7 +418,8 @@ h3 {
 
 .experience-grid,
 .card-grid,
-.package-grid {
+.package-grid,
+.testimonial-grid {
   display: grid;
   gap: 1rem;
 }
@@ -433,7 +436,8 @@ h3 {
 }
 
 .card-grid,
-.package-grid {
+.package-grid,
+.testimonial-grid {
   grid-template-columns: repeat(3, 1fr);
 }
 
@@ -535,6 +539,36 @@ h3 {
   color: var(--black);
 }
 
+.testimonial-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 280px;
+  padding: 1.4rem;
+  border-radius: var(--radius-md);
+}
+
+.testimonial-card p {
+  color: var(--ivory);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.32rem;
+  line-height: 1.45;
+}
+
+.testimonial-card div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.testimonial-card strong {
+  color: var(--gold-soft);
+}
+
+.testimonial-card span {
+  color: var(--ivory-muted);
+  font-size: 0.9rem;
+}
+
 .contact-list {
   display: grid;
   gap: 0.9rem;
@@ -591,6 +625,7 @@ label {
 }
 
 input,
+select,
 textarea {
   width: 100%;
   border: 1px solid rgba(243, 217, 147, 0.25);
@@ -601,11 +636,26 @@ textarea {
   background: rgba(9, 8, 6, 0.72);
 }
 
+select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--gold-soft) 50%),
+    linear-gradient(135deg, var(--gold-soft) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 14px) 50%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+}
+
 textarea {
   resize: vertical;
 }
 
 input:focus,
+select:focus,
 textarea:focus {
   border-color: var(--gold);
   box-shadow: 0 0 0 4px rgba(213, 168, 79, 0.12);
@@ -659,7 +709,8 @@ textarea:focus {
   .contact-section,
   .experience-grid,
   .card-grid,
-  .package-grid {
+  .package-grid,
+  .testimonial-grid {
     grid-template-columns: 1fr;
   }
 

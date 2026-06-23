@@ -5,24 +5,24 @@ function Hero() {
     <section className="hero" id="top">
       <div className="hero-content">
         <p className="eyebrow">Queen's Banquet Events</p>
-        <h1>Where royal wedding moments become timeless celebrations.</h1>
+        <h1>Wedding coordination for calm, graceful celebrations.</h1>
         <p className="hero-copy">
-          Queen's Banquet Events blends grand reception styling, graceful
-          hospitality, and refined planning for couples who want every detail to
-          feel elegant, personal, and unforgettable.
+          Queen's Banquet Events is a coordination service led by Marou Madrid,
+          helping couples organize timelines, suppliers, family cues, and program
+          flow so the wedding day feels elegant, personal, and well-managed.
         </p>
         <p className="owner-line">Owned and managed by {brand.owner}</p>
 
         <div className="hero-actions">
-          <a className="button button-primary" href="#packages">
-            Explore Packages
+          <a className="button button-primary" href="#contact">
+            Book a Meeting
           </a>
-          <a className="button button-secondary" href="#gallery">
-            View Gallery
+          <a className="button button-secondary" href="#testimonials">
+            Read Testimonials
           </a>
         </div>
 
-        <dl className="hero-highlights" aria-label="Venue highlights">
+        <dl className="hero-highlights" aria-label="Coordination highlights">
           {highlights.map((item) => (
             <div key={item.label}>
               <dt>{item.value}</dt>

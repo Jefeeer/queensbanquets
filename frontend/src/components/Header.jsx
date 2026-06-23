@@ -7,7 +7,7 @@ function Header() {
         <img className="brand-logo" src={brand.logo} alt="" />
         <span>
           Queen's
-          <strong>Banquet</strong>
+          <strong>Banquet Events</strong>
         </span>
       </a>
 

@@ -4,6 +4,7 @@ import Experience from './components/Experience.jsx';
 import Services from './components/Services.jsx';
 import Gallery from './components/Gallery.jsx';
 import Packages from './components/Packages.jsx';
+import Testimonials from './components/Testimonials.jsx';
 import Contact from './components/Contact.jsx';
 import Footer from './components/Footer.jsx';
 
@@ -17,6 +18,7 @@ function App() {
         <Services />
         <Gallery />
         <Packages />
+        <Testimonials />
         <Contact />
       </main>
       <Footer />

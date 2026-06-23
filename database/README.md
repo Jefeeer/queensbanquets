@@ -6,11 +6,12 @@ This directory prepares the data layer for future integration. The SQL is writte
 
 - `schema.sql` - current target schema snapshot.
 - `migrations/001_create_inquiries.sql` - starter migration for inquiry capture.
-- `seeds/sample_events.sql` - optional sample package/event records for local development.
+- `migrations/002_add_meeting_fields_to_inquiries.sql` - meeting request fields for coordination bookings.
+- `seeds/sample_events.sql` - optional sample coordination package records for local development.
 
 ## Future Tables
 
-- `event_inquiries` - contact form submissions and booking requests.
-- `event_packages` - package cards such as Ivory Promise, Golden Vow, and Royal Banquet.
-- `gallery_items` - image or media records for the website portfolio.
-- `venue_availability` - optional calendar availability for booking flows.
+- `event_inquiries` - contact form submissions and meeting requests.
+- `event_packages` - coordination package cards such as Ivory Guidance, Golden Coordination, and Royal Full Coordination.
+- `gallery_items` - image or media records for coordination moments and client proof.
+- `meeting_schedules` - optional consultation availability for booking flows.

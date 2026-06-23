@@ -1,6 +1,6 @@
 # Queen's Banquet Events Frontend
 
-React/Vite landing page for Queen's Banquet Events.
+React/Vite landing page for Queen's Banquet Events wedding and event coordination.
 
 ## Local URLs
 
