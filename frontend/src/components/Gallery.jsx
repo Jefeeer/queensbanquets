@@ -4,7 +4,7 @@ import SectionHeading from './SectionHeading.jsx';
 function Gallery() {
   return (
     <section className="section gallery-section" id="gallery">
-      <SectionHeading eyebrow="Portfolio" title="A glimpse into the Queens Banquet atmosphere.">
+      <SectionHeading eyebrow="Portfolio" title="A glimpse into the Queen's Banquet Events atmosphere.">
         The visual system uses layered black, antique gold, and warm ivory to
         evoke a luxury wedding venue without relying on stock photography.
       </SectionHeading>

@@ -1,4 +1,4 @@
-# Queens Banquet Database
+# Queen's Banquet Events Database
 
 This directory prepares the data layer for future integration. The SQL is written to be portable for PostgreSQL-oriented deployments.
 

@@ -1,6 +1,6 @@
-# Queens Banquet Backend
+# Queen's Banquet Events Backend
 
-Backend service layer prepared for future Queens Banquet business workflows.
+Backend service layer prepared for future Queen's Banquet Events business workflows.
 
 ## Structure
 

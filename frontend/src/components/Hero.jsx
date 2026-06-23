@@ -1,16 +1,17 @@
-import { highlights } from '../data/siteContent.js';
+import { brand, highlights } from '../data/siteContent.js';
 
 function Hero() {
   return (
     <section className="hero" id="top">
       <div className="hero-content">
-        <p className="eyebrow">Wedding banquets and luxury celebrations</p>
+        <p className="eyebrow">Queen's Banquet Events</p>
         <h1>Where royal wedding moments become timeless celebrations.</h1>
         <p className="hero-copy">
-          Queens Banquet blends grand reception styling, graceful hospitality,
-          and refined planning for couples who want every detail to feel elegant,
-          personal, and unforgettable.
+          Queen's Banquet Events blends grand reception styling, graceful
+          hospitality, and refined planning for couples who want every detail to
+          feel elegant, personal, and unforgettable.
         </p>
+        <p className="owner-line">Owned and managed by {brand.owner}</p>
 
         <div className="hero-actions">
           <a className="button button-primary" href="#packages">
@@ -31,7 +32,8 @@ function Hero() {
         </dl>
       </div>
 
-      <div className="hero-card" aria-label="Elegant wedding table arrangement">
+      <div className="hero-card" aria-label="Queen's Banquet Events brand presentation">
+        <img className="hero-logo" src={brand.logo} alt="Queen's Banquet Events" />
         <div className="arch arch-large" />
         <div className="arch arch-small" />
         <div className="table-setting">

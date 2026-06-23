@@ -1,5 +1,5 @@
 export async function sendInquiryNotification(inquiry, notifier) {
-  const subject = `New Queens Banquet inquiry from ${inquiry.coupleName}`;
+  const subject = `New Queen's Banquet Events inquiry from ${inquiry.coupleName}`;
   const body = [
     `Email: ${inquiry.email}`,
     `Event date: ${inquiry.eventDate ?? 'Not provided'}`,

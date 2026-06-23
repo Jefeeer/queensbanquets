@@ -1,6 +1,6 @@
-# Queens Banquet System Architecture
+# Queen's Banquet Events System Architecture
 
-Queens Banquet is organized as a layered web system so the landing page can launch first while backend features are integrated later.
+Queen's Banquet Events is organized as a layered web system so the landing page can launch first while backend features are integrated later.
 
 ## Layers
 

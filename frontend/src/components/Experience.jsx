@@ -10,7 +10,7 @@ function Experience() {
 
       <div>
         <SectionHeading
-          eyebrow="The Queens Banquet experience"
+          eyebrow="The Queen's Banquet Events experience"
           title="A refined wedding setting with thoughtful flow."
         >
           From the first champagne welcome to the last dance, the experience is

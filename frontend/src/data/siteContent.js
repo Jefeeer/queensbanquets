@@ -6,6 +6,12 @@ export const navigationItems = [
   { label: 'Contact', href: '#contact' },
 ];
 
+export const brand = {
+  name: "Queen's Banquet Events",
+  owner: 'Marou Madrid',
+  logo: '/queens-banquet-logo.svg',
+};
+
 export const highlights = [
   { value: '350+', label: 'Seated guest capacity' },
   { value: '24k', label: 'Gold-inspired details' },
@@ -57,7 +63,9 @@ export const packages = [
 ];
 
 export const contactChannels = [
-  'hello@queensbanquet.com',
-  '+1 (555) 024-0927',
-  'By private appointment',
+  { label: 'Owner', value: 'Marou Madrid' },
+  { label: 'Viber', value: '09177677812', href: 'tel:+639177677812' },
+  { label: 'Mobile', value: '09260843884', href: 'tel:+639260843884' },
+  { label: 'Landline', value: '046 489 3887', href: 'tel:+63464893887' },
+  { label: 'Email', value: 'queensbanquet07@gmail.com', href: 'mailto:queensbanquet07@gmail.com' },
 ];

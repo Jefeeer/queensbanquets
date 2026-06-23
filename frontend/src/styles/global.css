@@ -91,17 +91,14 @@ textarea {
   font-weight: 700;
 }
 
-.brand-mark {
-  display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
-  place-items: center;
-  border: 1px solid var(--gold);
+.brand-logo {
+  width: 3.15rem;
+  height: 3.15rem;
+  border: 2px solid var(--gold);
   border-radius: 50%;
-  color: var(--black);
-  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
-  font-weight: 800;
-  letter-spacing: 0;
+  background: var(--black);
+  box-shadow: 0 0 22px rgba(213, 168, 79, 0.24);
+  object-fit: cover;
 }
 
 .site-nav {
@@ -207,6 +204,12 @@ h3 {
   font-size: 1.1rem;
 }
 
+.owner-line {
+  margin-bottom: 0;
+  color: var(--gold-soft);
+  font-weight: 800;
+}
+
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -291,6 +294,17 @@ h3 {
     radial-gradient(circle at 50% 30%, rgba(243, 217, 147, 0.34), transparent 16rem),
     linear-gradient(160deg, #302215, #0a0806 58%);
   box-shadow: var(--shadow);
+}
+
+.hero-logo {
+  position: absolute;
+  top: 2.2rem;
+  left: 50%;
+  z-index: 2;
+  width: min(72%, 360px);
+  border-radius: 50%;
+  filter: drop-shadow(0 22px 34px rgba(0, 0, 0, 0.48));
+  transform: translateX(-50%);
 }
 
 .hero-card::before,
@@ -531,8 +545,28 @@ h3 {
 }
 
 .contact-list li {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 1rem;
   padding-bottom: 0.9rem;
   border-bottom: 1px solid var(--line);
+}
+
+.contact-list span {
+  color: var(--gold-soft);
+  font-weight: 800;
+}
+
+.contact-list a,
+.contact-list strong,
+.site-footer a {
+  color: var(--ivory);
+  font-weight: 700;
+}
+
+.contact-list a:hover,
+.site-footer a:hover {
+  color: var(--gold-soft);
 }
 
 .contact-form {
@@ -606,6 +640,10 @@ textarea:focus {
   font-size: 1.5rem;
 }
 
+.site-footer a {
+  align-self: start;
+}
+
 @media (max-width: 980px) {
   .site-header {
     align-items: flex-start;
@@ -632,6 +670,10 @@ textarea:focus {
   .hero-card,
   .split-panel {
     min-height: 440px;
+  }
+
+  .hero-logo {
+    width: min(62%, 280px);
   }
 
   .gallery-grid {
@@ -663,6 +705,11 @@ textarea:focus {
 
   .site-footer {
     display: grid;
+  }
+
+  .contact-list li {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
   }
 
   .table-setting {

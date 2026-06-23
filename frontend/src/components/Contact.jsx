@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { submitInquiry } from '../api/inquiries.js';
-import { contactChannels } from '../data/siteContent.js';
+import { brand, contactChannels } from '../data/siteContent.js';
 import SectionHeading from './SectionHeading.jsx';
 
 const initialFormState = {
@@ -37,13 +37,16 @@ function Contact() {
     <section className="section contact-section" id="contact">
       <div>
         <SectionHeading eyebrow="Begin the celebration" title="Request a private consultation.">
-          Share your wedding vision and guest count. The form is structured for
-          API integration when the backend is connected.
+          Contact {brand.owner} directly or share your wedding vision and guest
+          count through the inquiry form.
         </SectionHeading>
 
         <ul className="contact-list">
           {contactChannels.map((channel) => (
-            <li key={channel}>{channel}</li>
+            <li key={channel.label}>
+              <span>{channel.label}</span>
+              {channel.href ? <a href={channel.href}>{channel.value}</a> : <strong>{channel.value}</strong>}
+            </li>
           ))}
         </ul>
       </div>
@@ -108,7 +111,7 @@ function Contact() {
         </button>
 
         {status === 'success' ? (
-          <p className="form-status">Thank you. Your inquiry is ready for the Queens Banquet team.</p>
+          <p className="form-status">Thank you. Your inquiry is ready for Queen's Banquet Events.</p>
         ) : null}
         {status === 'error' ? (
           <p className="form-status form-status-error">Please try again or contact us directly.</p>

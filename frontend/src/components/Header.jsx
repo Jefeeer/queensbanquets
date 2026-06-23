@@ -1,12 +1,12 @@
-import { navigationItems } from '../data/siteContent.js';
+import { brand, navigationItems } from '../data/siteContent.js';
 
 function Header() {
   return (
     <header className="site-header">
-      <a className="brand" href="#top" aria-label="Queens Banquet home">
-        <span className="brand-mark">QB</span>
+      <a className="brand" href="#top" aria-label="Queen's Banquet Events home">
+        <img className="brand-logo" src={brand.logo} alt="" />
         <span>
-          Queens
+          Queen's
           <strong>Banquet</strong>
         </span>
       </a>

@@ -1,4 +1,4 @@
-# Queens Banquet API
+# Queen's Banquet Events API
 
 HTTP API layer prepared for future website integration.
 

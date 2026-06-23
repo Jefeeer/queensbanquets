@@ -11,5 +11,5 @@ app.get('/health', (_request, response) => {
 app.use('/inquiries', inquiryRoutes);
 
 app.listen(port, () => {
-  console.log(`Queens Banquet API listening on port ${port}`);
+  console.log(`Queen's Banquet Events API listening on port ${port}`);
 });

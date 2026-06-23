@@ -1,6 +1,6 @@
-# Queens Banquet Frontend
+# Queen's Banquet Events Frontend
 
-React/Vite landing page for Queens Banquet.
+React/Vite landing page for Queen's Banquet Events.
 
 ## Local URLs
 
