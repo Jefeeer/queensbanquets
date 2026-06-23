@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@fontsource/open-sans": "^5.2.7",
+    "@fontsource/playfair-display": "^5.2.8",
     "@vitejs/plugin-react": "latest",
     "lucide-react": "^1.21.0",
     "react": "latest",

@@ -5,6 +5,8 @@ import AdminApp from './admin/AdminApp.jsx';
 import { LandingContentProvider } from './content/LandingContentContext.jsx';
 import '@fontsource/open-sans/latin-400.css';
 import '@fontsource/open-sans/latin-500.css';
+import '@fontsource/playfair-display/latin-400.css';
+import '@fontsource/playfair-display/latin-500.css';
 import './styles/global.css';
 
 function Root() {
