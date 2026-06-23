@@ -1,7 +1,8 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { defaultLandingContent } from '../data/siteContent.js';
 
 const LANDING_CONTENT_STORAGE_KEY = 'queens-banquet-events-content';
+const LANDING_CONTENT_UPDATED_EVENT = 'queens-banquet-events-content-updated';
 
 const LandingContentContext = createContext(null);
 
@@ -37,15 +38,36 @@ export function loadLandingContent() {
 
 export function saveLandingContent(content) {
   window.localStorage.setItem(LANDING_CONTENT_STORAGE_KEY, JSON.stringify(content));
+  window.dispatchEvent(new CustomEvent(LANDING_CONTENT_UPDATED_EVENT));
 }
 
 export function resetLandingContent() {
   window.localStorage.removeItem(LANDING_CONTENT_STORAGE_KEY);
-  return clone(defaultLandingContent);
+  const defaultContent = clone(defaultLandingContent);
+  window.dispatchEvent(new CustomEvent(LANDING_CONTENT_UPDATED_EVENT));
+  return defaultContent;
 }
 
 export function LandingContentProvider({ children }) {
   const [content, setContentState] = useState(loadLandingContent);
+
+  useEffect(() => {
+    function syncContent(event) {
+      if (event.type === 'storage' && event.key !== LANDING_CONTENT_STORAGE_KEY) {
+        return;
+      }
+
+      setContentState(loadLandingContent());
+    }
+
+    window.addEventListener('storage', syncContent);
+    window.addEventListener(LANDING_CONTENT_UPDATED_EVENT, syncContent);
+
+    return () => {
+      window.removeEventListener('storage', syncContent);
+      window.removeEventListener(LANDING_CONTENT_UPDATED_EVENT, syncContent);
+    };
+  }, []);
 
   function setContent(nextContent) {
     setContentState(nextContent);
@@ -55,6 +77,7 @@ export function LandingContentProvider({ children }) {
   function resetContent() {
     const defaultContent = resetLandingContent();
     setContentState(defaultContent);
+    return defaultContent;
   }
 
   const value = useMemo(

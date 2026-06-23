@@ -62,12 +62,13 @@ function AdminApp() {
 
   function saveChanges() {
     setContent(draft);
-    setStatus('Saved. Refresh the landing page to see the latest local changes.');
+    setStatus('Saved. Open landing pages update automatically while npm run dev is running.');
   }
 
   function handleReset() {
-    resetContent();
-    window.location.reload();
+    const defaultContent = resetContent();
+    setDraft(defaultContent);
+    setStatus('Local content was reset and open landing pages updated automatically.');
   }
 
   if (!isAuthenticated) {

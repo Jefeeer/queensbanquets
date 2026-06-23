@@ -24,6 +24,8 @@ npm run dev
 
 The frontend app runs from `frontend/` at `http://localhost:5174` and is ready to connect to the API layer when backend services are implemented.
 
+While `npm run dev` is running, Vite automatically hot-reloads code and style changes. Admin content changes saved from `/admin` also sync automatically to open landing-page tabs through browser local storage events, so you do not need to stop and restart the dev server.
+
 ## Admin Page
 
 The admin page is hidden from the landing page navigation and can be opened directly:
