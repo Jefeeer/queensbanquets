@@ -7,7 +7,7 @@ function Hero() {
   } = useLandingContent();
 
   return (
-    <section className="hero" id="top">
+    <section className="hero">
       <div className="hero-content">
         <p className="eyebrow">{heroContent.eyebrow}</p>
         <h1>{heroContent.title}</h1>

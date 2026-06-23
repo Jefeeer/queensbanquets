@@ -12,8 +12,10 @@ function App() {
   return (
     <>
       <Header />
-      <main>
+      <div className="landing-splash" id="top">
         <Hero />
+      </div>
+      <main>
         <Experience />
         <Services />
         <Gallery />
