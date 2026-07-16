@@ -69,7 +69,7 @@ const pageTitles = {
 };
 
 function AdminApp() {
-  const { content, setContent, resetContent, isHydrating } = useLandingContent();
+  const { content, setContent, resetContent, syncLocalContentToDatabase, isHydrating } = useLandingContent();
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => window.localStorage.getItem(ADMIN_SESSION_KEY) === 'active',
   );
@@ -86,6 +86,9 @@ function AdminApp() {
   const [authLoadingLabel, setAuthLoadingLabel] = useState('Signing in');
   const sectionTimerRef = useRef(null);
   const authTimerRef = useRef(null);
+  const localSyncDoneRef = useRef(false);
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
 
   function pushToast(type, message) {
     const id = crypto.randomUUID();
@@ -104,6 +107,51 @@ function AdminApp() {
   useEffect(() => {
     setDraft(content);
   }, [content]);
+
+  useEffect(() => {
+    if (!isAuthenticated || isHydrating || localSyncDoneRef.current) {
+      return undefined;
+    }
+
+    if (!isApiEnabled() || !getStoredAdminToken()) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    localSyncDoneRef.current = true;
+
+    async function pushCurrentAdminDraft() {
+      await new Promise((resolve) => window.setTimeout(resolve, 400));
+      if (cancelled) {
+        return;
+      }
+
+      try {
+        const result = await setContent(draftRef.current);
+        if (cancelled) {
+          return;
+        }
+
+        if (result?.savedLocally) {
+          localSyncDoneRef.current = false;
+          return;
+        }
+
+        pushToast('success', 'Admin content synced to Supabase landing_content.');
+      } catch (error) {
+        localSyncDoneRef.current = false;
+        if (!cancelled) {
+          pushToast('error', error.message ?? 'Unable to sync admin content.');
+        }
+      }
+    }
+
+    pushCurrentAdminDraft();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, isHydrating]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setBootLoading(false), 750);
@@ -235,13 +283,31 @@ function AdminApp() {
     setIsSaving(true);
 
     try {
-      await setContent(draft);
-      pushToast(
-        'success',
-        isApiEnabled() && getStoredAdminToken()
-          ? 'Saved to the database. Open landing pages update automatically while npm run dev is running.'
-          : 'Saved locally. Open landing pages update automatically while npm run dev is running.',
-      );
+      const result = await setContent(draft);
+      const apiOn = isApiEnabled();
+      const hasToken = Boolean(getStoredAdminToken());
+
+      if (apiOn && hasToken && !result?.savedLocally) {
+        pushToast(
+          'success',
+          'Saved to the database. Open landing pages update automatically while npm run dev is running.',
+        );
+      } else if (apiOn && !hasToken) {
+        pushToast(
+          'error',
+          'Saved locally only. Sign out and sign in again so the admin can connect to Supabase.',
+        );
+      } else if (!apiOn) {
+        pushToast(
+          'error',
+          'Saved locally only. Set VITE_API_BASE_URL and restart npm run dev.',
+        );
+      } else {
+        pushToast(
+          'success',
+          'Saved locally. Open landing pages update automatically while npm run dev is running.',
+        );
+      }
     } catch (error) {
       pushToast('error', error.message ?? 'Unable to save changes right now.');
     } finally {

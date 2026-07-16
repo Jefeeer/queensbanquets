@@ -2,18 +2,20 @@ import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import pg from 'pg';
 import { defaultLandingContent } from '../../frontend/src/data/siteContent.js';
+import { createPgClientOptions } from './pgClient.js';
 
-const databaseUrl = process.env.DATABASE_URL;
 const adminEmail = process.env.ADMIN_EMAIL ?? 'queensbanquet07@gmail.com';
 const adminPassword = process.env.ADMIN_PASSWORD ?? 'marou-admin';
 const adminName = process.env.ADMIN_NAME ?? 'Marou Madrid';
 
-if (!databaseUrl) {
-  console.error('DATABASE_URL is required to run seeds.');
+let client;
+
+try {
+  client = new pg.Client(createPgClientOptions());
+} catch (error) {
+  console.error(error.message);
   process.exit(1);
 }
-
-const client = new pg.Client({ connectionString: databaseUrl });
 
 async function seed() {
   await client.connect();

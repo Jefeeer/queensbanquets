@@ -3,6 +3,18 @@ import { getEnvironment } from '../config/environment.js';
 
 let pool;
 
+function shouldUseSsl(databaseUrl) {
+  if (process.env.DATABASE_SSL === 'true') {
+    return true;
+  }
+
+  if (process.env.DATABASE_SSL === 'false') {
+    return false;
+  }
+
+  return /supabase\.(co|com)/i.test(databaseUrl);
+}
+
 export function getPool() {
   if (pool) {
     return pool;
@@ -14,10 +26,17 @@ export function getPool() {
     throw new Error('DATABASE_URL is not configured.');
   }
 
-  pool = new pg.Pool({
+  const poolConfig = {
     connectionString: databaseUrl,
     max: 10,
-  });
+  };
+
+  // Supabase (and most cloud Postgres) requires TLS.
+  if (shouldUseSsl(databaseUrl)) {
+    poolConfig.ssl = { rejectUnauthorized: false };
+  }
+
+  pool = new pg.Pool(poolConfig);
 
   return pool;
 }

@@ -1,10 +1,16 @@
-import 'dotenv/config';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import express from 'express';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { checkDatabaseConnection, closePool, getEnvironment } from '@queens-banquet/backend';
 import adminRoutes from './routes/admin.routes.js';
 import contentRoutes from './routes/content.routes.js';
 import inquiryRoutes from './routes/inquiries.routes.js';
+
+// Load monorepo root .env (works when npm runs this from the api workspace cwd)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const app = express();
 const { corsOrigin } = getEnvironment();

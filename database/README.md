@@ -51,3 +51,13 @@ postgresql://queensbanquet:queensbanquet@localhost:5432/queensbanquet
 ```
 
 Set `DATABASE_URL` in `.env` for the API and migration scripts.
+
+## Supabase
+
+To use cloud Postgres instead of local Docker:
+
+1. Follow the full guide: **[../supabase.md](../supabase.md)**
+2. Paste your Supabase connection URI into `.env` as `DATABASE_URL`
+3. Run `npm run db:migrate` then `npm run db:seed` from the repo root
+
+SSL is enabled automatically when `DATABASE_URL` points at a Supabase host (see `database/scripts/pgClient.js` and `backend/src/db/pool.js`).

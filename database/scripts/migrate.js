@@ -3,17 +3,19 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
+import { createPgClientOptions } from './pgClient.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const migrationsDir = path.join(__dirname, '../migrations');
-const databaseUrl = process.env.DATABASE_URL;
 
-if (!databaseUrl) {
-  console.error('DATABASE_URL is required to run migrations.');
+let client;
+
+try {
+  client = new pg.Client(createPgClientOptions());
+} catch (error) {
+  console.error(error.message);
   process.exit(1);
 }
-
-const client = new pg.Client({ connectionString: databaseUrl });
 
 async function runMigrations() {
   await client.connect();

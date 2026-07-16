@@ -18,7 +18,8 @@
     "db:down": "docker compose down",
     "db:migrate": "node database/scripts/migrate.js",
     "db:seed": "node database/scripts/seed.js",
-    "db:setup": "npm run db:up && sleep 4 && npm run db:migrate && npm run db:seed"
+    "db:setup": "npm run db:up && sleep 4 && npm run db:migrate && npm run db:seed",
+    "start:api": "npm run start --workspace api"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

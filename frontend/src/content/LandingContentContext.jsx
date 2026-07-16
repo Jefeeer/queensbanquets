@@ -87,6 +87,22 @@ export function LandingContentProvider({ children }) {
 
     async function hydrateFromApi() {
       try {
+        const token = getStoredAdminToken();
+        const localSnapshot = loadLandingContent();
+
+        // If the admin previously saved locally, push that snapshot to Supabase first.
+        if (token && localSnapshot) {
+          try {
+            await saveLandingContentRemote(localSnapshot, token);
+            if (!cancelled) {
+              setContentState(localSnapshot);
+              saveLandingContent(localSnapshot);
+            }
+          } catch (syncError) {
+            console.warn('Unable to push local content before hydrate.', syncError);
+          }
+        }
+
         const apiContent = await fetchLandingContent();
 
         if (!cancelled && apiContent) {
@@ -121,10 +137,16 @@ export function LandingContentProvider({ children }) {
     const token = getStoredAdminToken();
 
     if (!token) {
-      return { savedLocally: true };
+      return { savedLocally: true, reason: 'missing_token' };
     }
 
-    return saveLandingContentRemote(nextContent, token);
+    const remote = await saveLandingContentRemote(nextContent, token);
+    return { ...remote, savedLocally: false };
+  }
+
+  async function syncLocalContentToDatabase() {
+    const localContent = loadLandingContent();
+    return setContent(localContent);
   }
 
   async function resetContent() {
@@ -155,6 +177,7 @@ export function LandingContentProvider({ children }) {
       isHydrating,
       setContent,
       resetContent,
+      syncLocalContentToDatabase,
     }),
     [content, isHydrating],
   );

@@ -43,7 +43,8 @@ export async function saveLandingContent(content, token) {
   });
 
   if (!response.ok) {
-    throw new Error('Unable to save landing content.');
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message ?? 'Unable to save landing content.');
   }
 
   return response.json();
