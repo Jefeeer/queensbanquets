@@ -145,7 +145,8 @@ export const testimonials = [
 
 export const contactChannels = [
   { label: 'Owner', value: 'Marou Madrid' },
-  { label: 'Viber', value: '09177677812', href: 'tel:+639177677812' },
+  { label: 'Facebook', value: "Queen's Banquet Events", href: 'https://www.facebook.com/' },
+  { label: 'Viber', value: '09177677812', href: 'viber://chat?number=639177677812' },
   { label: 'Mobile', value: '09260843884', href: 'tel:+639260843884' },
   { label: 'Landline', value: '046 489 3887', href: 'tel:+63464893887' },
   { label: 'Email', value: 'queensbanquet07@gmail.com', href: 'mailto:queensbanquet07@gmail.com' },
