@@ -126,7 +126,7 @@ function Header() {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            <ThemeToggle compact className="hidden sm:inline-flex" />
+            <ThemeToggle compact />
             <a
               href="#contact"
               className="hidden xl:block px-6 py-2 border border-primary text-primary font-label-md uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all duration-300 active:scale-95"
@@ -193,9 +193,6 @@ function Header() {
           >
             Request a Meeting
           </a>
-          <div className="pt-2 sm:hidden">
-            <ThemeToggle />
-          </div>
         </nav>
       </div>
 
