@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useLandingContent } from '../content/LandingContentContext.jsx';
 
@@ -9,6 +9,21 @@ function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeHref, setActiveHref] = useState('');
+
+  const navItems = useMemo(() => {
+    const raw = navigationItems || [];
+    const hasServices = raw.some((item) => (item.label || '').toUpperCase() === 'SERVICES');
+    if (hasServices) return raw;
+
+    const items = [...raw];
+    const aboutIdx = items.findIndex((item) => (item.label || '').toUpperCase().includes('ABOUT'));
+    if (aboutIdx !== -1) {
+      items.splice(aboutIdx + 1, 0, { label: 'SERVICES', href: '#services' });
+    } else {
+      items.push({ label: 'SERVICES', href: '#services' });
+    }
+    return items;
+  }, [navigationItems]);
 
   useEffect(() => {
     if (!menuOpen) {
@@ -42,7 +57,7 @@ function Header() {
   }, []);
 
   useEffect(() => {
-    const sections = navigationItems
+    const sections = navItems
       .map((item) => document.querySelector(item.href))
       .filter(Boolean);
 
@@ -66,7 +81,7 @@ function Header() {
     sections.forEach((section) => observer.observe(section));
 
     return () => observer.disconnect();
-  }, [navigationItems]);
+  }, [navItems]);
 
   function closeMenu() {
     setMenuOpen(false);
@@ -75,14 +90,10 @@ function Header() {
   return (
     <>
       <header
-        className={`w-full top-0 sticky z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 transition-all duration-300 ${
-          isScrolled ? 'shadow-xl bg-surface/95' : 'shadow-sm'
-        }`}
+        className={`site-header ${isScrolled ? 'is-scrolled' : ''}`}
       >
         <div
-          className={`max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex items-center justify-between transition-all duration-300 ${
-            isScrolled ? 'h-20' : 'h-24'
-          }`}
+          className="w-full flex items-center justify-between transition-all duration-300"
         >
           <a
             className="font-headline-md text-headline-md text-primary italic cursor-pointer active:scale-95 transition-all"
@@ -94,7 +105,7 @@ function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-10">
-            {navigationItems.map((item) => {
+            {navItems.map((item) => {
               const isActive = activeHref === item.href || (item.href === '#top' && activeHref === '#home');
               return (
                 <a
@@ -157,7 +168,7 @@ function Header() {
           </button>
         </div>
         <nav className="flex flex-col gap-6" aria-label="Mobile navigation">
-          {navigationItems.map((item) => {
+          {navItems.map((item) => {
             const isActive = activeHref === item.href || (item.href === '#top' && activeHref === '#home');
             return (
               <a

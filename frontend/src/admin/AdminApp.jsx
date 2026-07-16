@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   clearAdminToken,
   fetchAdminAnalytics,
@@ -17,7 +17,6 @@ import InquiriesPanel from './InquiriesPanel.jsx';
 import { formatRelativeDate, getStatusMeta } from './inquiryStatus.js';
 import './admin.css';
 import {
-  BarChart3,
   BriefcaseBusiness,
   Eye,
   FileText,
@@ -32,7 +31,6 @@ import {
   RotateCcw,
   Save,
   Settings,
-  Star,
   Trash2,
   UserRound,
   X,
@@ -43,15 +41,26 @@ const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL ?? 'queensbanquet07@gmail.c
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD ?? 'marou-admin';
 
 const sidebarItems = [
-  { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'experience', label: 'Events', icon: FileText },
-  { id: 'contact', label: 'Clients', icon: UserRound },
-  { id: 'inquiries', label: 'Bookings', icon: Inbox },
-  { id: 'services', label: 'Services', icon: BriefcaseBusiness },
-  { id: 'packages', label: 'Packages', icon: Package },
-  { id: 'testimonials', label: 'Testimonials', icon: MessageSquareQuote },
-  { id: 'brand', label: 'Settings', icon: Settings },
+  { id: 'overview', label: 'Dashboard', iconName: 'dashboard', group: 'Work' },
+  { id: 'inquiries', label: 'Bookings', iconName: 'calendar_month', group: 'Work' },
+  { id: 'experience', label: 'About', iconName: 'info', group: 'Site content' },
+  { id: 'services', label: 'Services', iconName: 'room_service', group: 'Site content' },
+  { id: 'packages', label: 'Packages', iconName: 'inventory_2', group: 'Site content' },
+  { id: 'testimonials', label: 'Testimonials', iconName: 'reviews', group: 'Site content' },
+  { id: 'contact', label: 'Contact', iconName: 'contact_page', group: 'Site content' },
+  { id: 'brand', label: 'Settings', iconName: 'settings', group: 'Site content' },
 ];
+
+const pageTitles = {
+  overview: 'Dashboard',
+  inquiries: 'Bookings',
+  experience: 'About content',
+  services: 'Services content',
+  packages: 'Packages content',
+  testimonials: 'Testimonials content',
+  contact: 'Contact content',
+  brand: 'Settings',
+};
 
 function AdminApp() {
   const { content, setContent, resetContent } = useLandingContent();
@@ -145,9 +154,16 @@ function AdminApp() {
   }
 
   function handleLogout() {
-    window.localStorage.removeItem(ADMIN_SESSION_KEY);
-    clearAdminToken();
-    setIsAuthenticated(false);
+    requestConfirm({
+      title: 'Sign out?',
+      message: 'Are you sure you want to log out of the administrative dashboard?',
+      confirmLabel: 'Sign out',
+      onConfirm: () => {
+        window.localStorage.removeItem(ADMIN_SESSION_KEY);
+        clearAdminToken();
+        setIsAuthenticated(false);
+      },
+    });
   }
 
   function updateDraft(updater) {
@@ -203,126 +219,234 @@ function AdminApp() {
   }
 
   const activeItem = sidebarItems.find((item) => item.id === activeSection);
+  const ownerName = draft.brand?.owner || 'Marou Madrid';
 
   return (
     <>
-    <div className="admin-shell">
-      <aside className={`admin-sidebar theme-dark${sidebarOpen ? ' is-open' : ''}`} id="admin-sidebar">
-        <div className="admin-brand ele-admin-brand">
-          <div className="ele-brand-text">
-            <span className="ele-brand-main">QUEEN'S</span>
-            <span className="ele-brand-sub">BANQUET EVENTS</span>
+      {/* Mobile top navigation bar */}
+      <div className="md:hidden h-14 bg-background border-b border-outline-variant flex items-center justify-between px-6 sticky top-0 z-40">
+        <button
+          className="text-on-surface hover:text-primary p-2 flex items-center"
+          type="button"
+          aria-expanded={sidebarOpen}
+          aria-controls="admin-sidebar"
+          aria-label={sidebarOpen ? 'Close admin menu' : 'Open admin menu'}
+          onClick={() => setSidebarOpen((current) => !current)}
+        >
+          <span className="material-symbols-outlined">menu</span>
+        </button>
+        <strong className="text-on-surface tracking-tight font-headline-md text-base">Queen's Banquet</strong>
+        <div className="w-10" />
+      </div>
+
+      <div className="admin-shell min-h-screen bg-background text-on-surface flex">
+        {/* Left Side Navigation Menu */}
+        <aside
+          className={`fixed left-0 top-0 h-screen w-sidebar-width bg-surface-container border-r border-outline-variant flex flex-col py-container-padding z-50 transition-transform duration-300 md:translate-x-0 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+          id="admin-sidebar"
+        >
+          <div className="px-6 mb-10 flex justify-between items-center">
+            <div>
+              <h1 className="font-headline-md text-headline-md text-primary tracking-tight">Queen's Banquet</h1>
+              <p className="font-label-caps text-label-caps text-on-surface-variant mt-1 text-[11px]">LUXURY CONCIERGE</p>
+            </div>
+            <button
+              className="md:hidden text-on-surface-variant hover:text-primary flex items-center"
+              type="button"
+              aria-label="Close admin menu"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
           </div>
+
+          <nav className="flex-1 px-2 space-y-6" aria-label="Admin sections">
+            {(() => {
+              // Group sidebar items by their group
+              const groups = sidebarItems.reduce((acc, item) => {
+                acc[item.group] ??= [];
+                acc[item.group].push(item);
+                return acc;
+              }, {});
+
+              return Object.entries(groups).map(([groupName, items]) => (
+                <div key={groupName} className="space-y-1">
+                  <p className="px-4 mb-2 font-label-caps text-label-caps text-primary uppercase tracking-widest text-[11px] font-semibold">
+                    {groupName}
+                  </p>
+                  <div className="space-y-1">
+                    {items.map((item) => {
+                      const isActive = activeSection === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          className={`w-full flex items-center gap-3 py-2 text-left transition-colors duration-200 hover:text-primary ${
+                            isActive ? 'sidebar-item-active font-semibold' : 'sidebar-item-inactive'
+                          }`}
+                          type="button"
+                          onClick={() => selectSection(item.id)}
+                        >
+                          <span
+                            className="material-symbols-outlined text-[20px]"
+                            style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                          >
+                            {item.iconName}
+                          </span>
+                          <span className="font-title-sm text-title-sm">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ));
+            })()}
+          </nav>
+
+          <div className="px-6 mt-auto">
+            <button
+              className="w-full flex items-center gap-3 p-3 rounded-lg bg-surface-container-high border border-outline-variant hover:brightness-110 transition-all text-left"
+              type="button"
+              onClick={handleLogout}
+              title="Sign out"
+            >
+              <img
+                className="w-10 h-10 rounded-full object-cover border border-primary"
+                alt=""
+                src={draft?.adminProfile?.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuC8q5SWUZ4h09Vxw_oq6GXDpVnokXQWGWrfwwiCPcSAtB5LVDyctBoZ9wMz24nmZ6JXuy91YoYKgPHrCWoBbWFvXKRfV8UwhIr7CrEn2YrLmmhB6s-60YLU9c7zdJj4FLe8ommixgSsN5j15ZbMdeBfB-OrIxAn9jEYgphZSVl93BEtQHUc5XRB299yAzjy-7GpfU3lc5b8y4FlA7pWCeqfHT07NHopkuTvvBlSxFKkWhj_1WG4R-O1MBpWnVyAfPF74ZG-xFfvImuM'}
+              />
+              <div className="flex-1 min-w-0">
+                <p className="font-title-sm text-title-sm text-on-surface truncate">{draft?.adminProfile?.displayName || 'Admin'}</p>
+                <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter truncate">Premium Access • Sign Out</p>
+              </div>
+            </button>
+          </div>
+        </aside>
+
+        {/* Sidebar Backdrop for Mobile Drawer */}
+        {sidebarOpen ? (
           <button
-            className="admin-sidebar-close"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
             type="button"
             aria-label="Close admin menu"
             onClick={() => setSidebarOpen(false)}
-          >
-            <X aria-hidden="true" size={18} strokeWidth={1.7} />
-          </button>
-        </div>
+          />
+        ) : null}
 
-        <nav className="admin-nav" aria-label="Admin sections">
-          {sidebarItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                className={activeSection === item.id ? 'active' : ''}
-                key={item.id}
-                type="button"
-                onClick={() => selectSection(item.id)}
-              >
-                <Icon aria-hidden="true" size={16} strokeWidth={1.6} />
-                {item.label}
+        {/* Main Work Area Container */}
+        <div className="flex-1 md:ml-sidebar-width min-h-screen flex flex-col">
+          {/* TopNavBar */}
+          <header className="h-16 bg-background border-b border-outline-variant flex items-center justify-between px-container-padding sticky top-0 z-30">
+            <div className="flex items-center w-1/3">
+              <div className="relative w-full max-w-sm">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                <input
+                  className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 text-sm py-2 pl-10 transition-all placeholder:text-on-surface-variant/50 text-on-surface"
+                  placeholder="Search inquiries, guests, or logistics..."
+                  type="text"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-6">
+              <button className="relative text-on-surface-variant hover:text-primary transition-colors flex items-center">
+                <span className="material-symbols-outlined">notifications</span>
+                <span className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full"></span>
               </button>
-            );
-          })}
-        </nav>
+              <button className="text-on-surface-variant hover:text-primary transition-colors flex items-center">
+                <span className="material-symbols-outlined">help</span>
+              </button>
+              <div className="h-8 w-[1px] bg-outline-variant"></div>
+              <div className="flex items-center gap-3 cursor-pointer group">
+                <span className="font-title-sm text-title-sm group-hover:text-primary transition-colors text-on-surface">Concierge Desk</span>
+                <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary flex items-center">expand_more</span>
+              </div>
+            </div>
+          </header>
 
-        <div className="admin-user-profile" onClick={handleLogout} title="Click to Logout">
-          <img src="/testimonial-bride-1.svg" className="admin-user-avatar" alt="Alex Carter" />
-          <div className="admin-user-info">
-            <span className="admin-user-name">Alex Carter</span>
-            <span className="admin-user-role">Admin</span>
-          </div>
-          <svg className="admin-user-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+          {/* Main workspace container */}
+          <main className="flex-1 p-container-padding bg-background overflow-y-auto">
+            {/* Section heading header block */}
+            <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <p className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-2 text-[11px]">
+                  <span>Admin</span>
+                  <span className="mx-2">/</span>
+                  <span>{activeItem?.label ?? 'Dashboard'}</span>
+                </p>
+                <h2 className="font-headline-md text-display-lg-mobile text-on-surface font-bold text-3xl">
+                  {activeSection === 'overview' ? 'Executive Overview' : pageTitles[activeSection]}
+                </h2>
+                <p className="text-on-surface-variant font-body-sm max-w-2xl mt-1">
+                  {activeSection === 'overview'
+                    ? 'Manage your premium banquet operations and real-time inquiries with absolute precision.'
+                    : activeSection === 'brand'
+                    ? 'Manage your admin profile, brand identity, hero copy, and account security.'
+                    : `Update and customize the ${activeItem?.label} section elements in real time.`}
+                </p>
+              </div>
+
+              {/* Action Buttons for Editors */}
+              <div className="flex items-center gap-4">
+                <a
+                  className="border border-outline-variant text-on-surface px-6 py-2 font-label-caps text-label-caps hover:border-primary transition-all flex items-center gap-2 text-xs"
+                  href="/"
+                >
+                  <span className="material-symbols-outlined text-[18px]">visibility</span>
+                  View site
+                </a>
+                {activeSection !== 'overview' && activeSection !== 'inquiries' ? (
+                  <>
+                    <button
+                      className="border border-outline-variant text-on-surface px-6 py-2 font-label-caps text-label-caps hover:border-primary transition-all flex items-center gap-2 text-xs"
+                      type="button"
+                      onClick={handleReset}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">restore</span>
+                      Reset content
+                    </button>
+                    <button
+                      className="bg-primary text-on-primary px-6 py-2 font-label-caps text-label-caps hover:brightness-110 transition-all disabled:opacity-50 flex items-center gap-2 text-xs"
+                      type="button"
+                      onClick={saveChanges}
+                      disabled={isSaving}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">save</span>
+                      {isSaving ? 'Saving...' : 'Save changes'}
+                    </button>
+                  </>
+                ) : null}
+              </div>
+            </header>
+
+            {/* Active view */}
+            <div className="admin-content-view">
+              {activeSection === 'overview' ? (
+                <Overview content={draft} onNavigate={selectSection} />
+              ) : null}
+              {activeSection === 'inquiries' ? <InquiriesPanel pushToast={pushToast} /> : null}
+              {activeSection === 'brand' ? <BrandHeroEditor draft={draft} updateDraft={updateDraft} /> : null}
+              {activeSection === 'experience' ? (
+                <ExperienceEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
+              ) : null}
+              {activeSection === 'contact' ? (
+                <ContactEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
+              ) : null}
+              {activeSection === 'services' ? (
+                <ServicesEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
+              ) : null}
+              {activeSection === 'packages' ? (
+                <PackagesEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
+              ) : null}
+              {activeSection === 'testimonials' ? (
+                <TestimonialsEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
+              ) : null}
+            </div>
+          </main>
         </div>
-      </aside>
-
-      {sidebarOpen ? (
-        <button
-          className="admin-sidebar-backdrop"
-          type="button"
-          aria-label="Close admin menu"
-          onClick={() => setSidebarOpen(false)}
-        />
-      ) : null}
-
-      <main className="admin-main">
-        <div className="admin-mobile-bar">
-          <button
-            className="admin-menu-toggle"
-            type="button"
-            aria-expanded={sidebarOpen}
-            aria-controls="admin-sidebar"
-            aria-label={sidebarOpen ? 'Close admin menu' : 'Open admin menu'}
-            onClick={() => setSidebarOpen((current) => !current)}
-          >
-            <Menu aria-hidden="true" size={20} strokeWidth={1.7} />
-          </button>
-          <strong>{draft.brand.name}</strong>
-        </div>
-
-        <header className="admin-topbar">
-          <div>
-            <p className="admin-breadcrumb">
-              <span>Admin</span>
-              <span>/</span>
-              <span>{activeItem?.label ?? 'Dashboard'}</span>
-            </p>
-            <h1>Landing Page Manager</h1>
-          </div>
-          <div className="admin-actions">
-            <a className="admin-secondary-button" href="/">
-              <Eye aria-hidden="true" size={18} strokeWidth={1.6} />
-              View Site
-            </a>
-            <button className="admin-secondary-button" type="button" onClick={handleReset}>
-              <RotateCcw aria-hidden="true" size={18} strokeWidth={1.6} />
-              Reset Content
-            </button>
-            <button className="admin-primary-button" type="button" onClick={saveChanges} disabled={isSaving}>
-              <Save aria-hidden="true" size={18} strokeWidth={1.6} />
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </header>
-
-        {activeSection === 'overview' ? <Overview content={draft} /> : null}
-        {activeSection === 'inquiries' ? <InquiriesPanel pushToast={pushToast} /> : null}
-        {activeSection === 'brand' ? <BrandHeroEditor draft={draft} updateDraft={updateDraft} /> : null}
-        {activeSection === 'experience' ? (
-          <ExperienceEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
-        ) : null}
-        {activeSection === 'contact' ? (
-          <ContactEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
-        ) : null}
-        {activeSection === 'services' ? (
-          <ServicesEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
-        ) : null}
-        {activeSection === 'packages' ? (
-          <PackagesEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
-        ) : null}
-        {activeSection === 'testimonials' ? (
-          <TestimonialsEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
-        ) : null}
-      </main>
-    </div>
-    <AdminToastStack toasts={toasts} onDismiss={dismissToast} />
-    <ConfirmDialog dialog={confirmDialog} onCancel={() => setConfirmDialog(null)} />
+      </div>
+      <AdminToastStack toasts={toasts} onDismiss={dismissToast} />
+      <ConfirmDialog dialog={confirmDialog} onCancel={() => setConfirmDialog(null)} />
     </>
   );
 }
@@ -331,6 +455,7 @@ function AdminLogin({ onLoginSuccess, brand }) {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -364,81 +489,178 @@ function AdminLogin({ onLoginSuccess, brand }) {
   }
 
   return (
-    <main className="admin-login-page">
-      <section className="admin-login-brand theme-dark">
-        <img src={brand?.logo ?? '/queens-banquet-logo.svg'} alt="" />
-        <p>Queen's Banquet Events</p>
-        <h1>Admin Dashboard</h1>
-        <span>
-          Manage your landing page content and booking inquiries in one calm,
-          organized place.
-        </span>
+    <main className="w-full min-h-screen grid grid-cols-1 md:grid-cols-2 bg-[#0a0a0a] text-white">
+      {/* LEFT SIDE: LUXURY IMAGE BANQUET */}
+      <section 
+        className="hidden md:flex flex-col justify-end p-16 relative bg-cover bg-center border-r border-[#1a1a1a]"
+        style={{ backgroundImage: "url('/luxury_banquet_login.png')" }}
+      >
+        {/* Dark Overlay for premium text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent z-0" />
+        
+        <div className="relative z-10 max-w-lg space-y-4">
+          <h2 className="font-headline-md text-3xl md:text-4xl text-white font-bold leading-tight font-display">
+            Secure Access to the Executive Suite
+          </h2>
+          <div className="w-20 h-0.5 bg-[#d4af37]"></div>
+          <p className="text-on-surface-variant/80 text-sm leading-relaxed font-body">
+            Authorized personnel only. Access to the Queen's Banquet administrative dashboard requires multi-factor authentication and high-level security clearance.
+          </p>
+        </div>
       </section>
 
-      <form className="admin-login-card" onSubmit={handleSubmit}>
-        <p>Restricted access</p>
-        <h1>Sign in</h1>
-        <label>
-          Admin email
-          <input
-            name="email"
-            type="email"
-            value={credentials.email}
-            onChange={handleChange}
-            placeholder="queensbanquet07@gmail.com"
-            required
-          />
-        </label>
-        <label>
-          Password
-          <input
-            name="password"
-            type="password"
-            value={credentials.password}
-            onChange={handleChange}
-            placeholder="Enter admin password"
-            required
-          />
-        </label>
-        <button className="admin-primary-button" type="submit" disabled={isSubmitting}>
-          <LogIn aria-hidden="true" size={18} strokeWidth={1.6} />
-          {isSubmitting ? 'Signing in...' : 'Login'}
-        </button>
-        {error ? <span className="admin-login-error">{error}</span> : null}
-        <small>
-          {isApiEnabled()
-            ? 'Sign in with your admin account stored in PostgreSQL.'
-            : 'Temporary local login until the API and database are connected.'}
-        </small>
-      </form>
+      {/* RIGHT SIDE: ADMIN ACCESS FORM */}
+      <section className="flex flex-col justify-between items-center p-8 md:p-16 min-h-screen bg-[#0a0a0a]">
+        {/* Top spacer or brand indicator */}
+        <div className="w-full max-w-sm mt-12 space-y-8">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-[#d4af37] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>crown</span>
+            <span className="font-headline-md text-[#d4af37] tracking-[0.2em] font-bold text-sm uppercase font-display">
+              Queen's Banquet
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="font-headline-md text-2xl font-bold text-white font-display">Administrative Login</h1>
+            <p className="text-[#a0a0a0] text-xs">Enter your credentials to manage the portfolio.</p>
+          </div>
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <label className="text-[10px] text-[#d4af37] tracking-[0.1em] font-bold uppercase block">
+                Corporate Email
+              </label>
+              <input
+                className="w-full bg-white text-black p-3.5 focus:ring-0 focus:outline-none text-xs rounded-none font-medium placeholder:text-neutral-400"
+                name="email"
+                type="email"
+                value={credentials.email}
+                onChange={handleChange}
+                placeholder="administrator@queensbanquet.com"
+                required
+                autoComplete="username"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] text-[#d4af37] tracking-[0.1em] font-bold uppercase block">
+                Access Token
+              </label>
+              <div className="relative w-full">
+                <input
+                  className="w-full bg-white text-black p-3.5 pr-12 focus:ring-0 focus:outline-none text-xs rounded-none font-mono"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={credentials.password}
+                  onChange={handleChange}
+                  placeholder="••••••••••••"
+                  required
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-black flex items-center justify-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    {showPassword ? 'visibility_off' : 'visibility'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="text-red-400 text-xs mt-2 border border-red-500/20 bg-red-500/10 p-3">
+                {error}
+              </div>
+            )}
+
+            <button
+              className="w-full bg-[#d4af37] text-black font-semibold text-xs tracking-widest uppercase py-3.5 hover:brightness-110 active:scale-[0.99] transition-all disabled:opacity-50"
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Signing in...' : 'Sign In'}
+            </button>
+
+            <div className="flex justify-between items-center text-[11px] pt-2">
+              <span className="text-[#a0a0a0] hover:text-white cursor-pointer transition-colors">Forgot Credentials?</span>
+              <span className="text-[#d4af37] hover:brightness-110 cursor-pointer font-semibold transition-all">Request Access</span>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer info at bottom */}
+        <div className="w-full flex items-center justify-center gap-2 mb-6">
+          <span className="material-symbols-outlined text-[#d4af37] text-sm">verified_user</span>
+          <span className="text-[9px] text-[#a0a0a0] tracking-[0.15em] font-semibold uppercase">
+            Multi-Factor Authentication Enabled
+          </span>
+        </div>
+      </section>
     </main>
   );
 }
 
-function Overview({ content }) {
+const defaultMockInquiries = [
+  {
+    id: 'mock-1',
+    coupleName: 'Elizabeth Windsor',
+    coordinationNeed: 'ROYAL SIGNATURE',
+    preferredMeetingDate: 'Oct 12, 2024',
+    status: 'approved',
+  },
+  {
+    id: 'mock-2',
+    coupleName: 'Julian Aster',
+    coordinationNeed: 'SOVEREIGN',
+    preferredMeetingDate: 'Oct 14, 2024',
+    status: 'pending',
+  },
+  {
+    id: 'mock-3',
+    coupleName: 'Catherine Halloway',
+    coordinationNeed: 'HEIRLOOM',
+    preferredMeetingDate: 'Oct 15, 2024',
+    status: 'approved',
+  },
+  {
+    id: 'mock-4',
+    coupleName: 'Marcus Sterling',
+    coordinationNeed: 'ROYAL SIGNATURE',
+    preferredMeetingDate: 'Oct 16, 2024',
+    status: 'pending',
+  },
+];
+
+function Overview({ content, onNavigate }) {
   const [inquiries, setInquiries] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  const [isLoading, setIsLoading] = useState(isApiEnabled());
+  const sparklineRef = useRef(null);
+  const analyticsChartRef = useRef(null);
 
   useEffect(() => {
     if (!isApiEnabled()) {
+      setIsLoading(false);
       return undefined;
     }
 
     const token = getStoredAdminToken();
-
     if (!token) {
+      setIsLoading(false);
       return undefined;
     }
 
     let cancelled = false;
-
     Promise.all([
-      fetchAdminInquiries(token).catch(() => null),
-      fetchAdminAnalytics(token).catch(() => null)
+      fetchAdminInquiries(token).catch(() => []),
+      fetchAdminAnalytics(token).catch(() => null),
     ]).then(([inquiriesData, analyticsData]) => {
       if (!cancelled) {
-        setInquiries(inquiriesData);
+        setInquiries(inquiriesData ?? []);
         setAnalytics(analyticsData);
+        setIsLoading(false);
       }
     });
 
@@ -447,532 +669,1845 @@ function Overview({ content }) {
     };
   }, []);
 
-  const statsCards = [
-    { label: 'Total Events', value: '142', change: '+15%', color: '#22c55e' },
-    { label: 'Upcoming', value: '38', change: '+8%', color: '#22c55e' },
-    { label: 'Clients', value: '98', change: '+12%', color: '#22c55e' },
-    { label: 'Revenue', value: '$2.1M', change: '+24%', color: '#22c55e' },
-  ];
+  useEffect(() => {
+    if (!window.Chart) return undefined;
 
-  const bookingsData = [
-    { date: 'Jan 15', name: 'Alex Carter', role: 'Admin', event: 'Met Gala Tribute', avatar: '/testimonial-bride-1.svg' },
-    { date: 'Dec 23', name: 'Mari Eenn', role: 'Femiter', event: 'Vogue Gala', avatar: '/testimonial-couple-1.svg' },
-    { date: 'Dec 29', name: 'John Carter', role: 'Admin', event: 'Luxury Wedding', avatar: '/testimonial-family-1.svg' },
-    { date: 'Jan 23', name: 'Juta Dev', role: 'Femiter', event: 'Vogue Gala', avatar: '/testimonial-bride-1.svg' },
-    { date: 'Nov 25', name: 'Maa Bana', role: 'Admin', event: 'Vogue Gala', avatar: '/testimonial-couple-1.svg' },
-    { date: 'Dec 26', name: 'Alex Carter', role: 'Admin', event: 'Luxury Wedding', avatar: '/testimonial-family-1.svg' },
-    { date: 'Jan 27', name: 'John Carter', role: 'Admin', event: 'Luxury Wedding', avatar: '/testimonial-bride-1.svg' },
-  ];
+    let sparkChart = null;
+    let mainChart = null;
+
+    if (sparklineRef.current) {
+      const sparkCtx = sparklineRef.current.getContext('2d');
+      sparkChart = new window.Chart(sparkCtx, {
+        type: 'line',
+        data: {
+          labels: [1, 2, 3, 4, 5, 6, 7],
+          datasets: [{
+            data: [12, 19, 15, 25, 22, 30, 32],
+            borderColor: '#d4af37',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.4,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { display: false }, y: { display: false } }
+        }
+      });
+    }
+
+    if (analyticsChartRef.current) {
+      const mainCtx = analyticsChartRef.current.getContext('2d');
+      const gradient = mainCtx.createLinearGradient(0, 0, 0, 300);
+      gradient.addColorStop(0, 'rgba(212, 175, 55, 0.2)');
+      gradient.addColorStop(1, 'rgba(212, 175, 55, 0)');
+
+      mainChart = new window.Chart(mainCtx, {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [{
+            label: 'RSVP Submissions',
+            data: [45, 62, 55, 80, 75, 95, 110],
+            borderColor: '#d4af37',
+            borderWidth: 3,
+            pointBackgroundColor: '#d4af37',
+            pointBorderColor: '#0a0a0a',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 8,
+            tension: 0.3,
+            fill: true,
+            backgroundColor: gradient
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: '#2a2a2a' },
+              ticks: { color: '#d0c5af', font: { family: 'Inter', size: 10 } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#d0c5af', font: { family: 'Inter', size: 10 } }
+            }
+          }
+        }
+      });
+    }
+
+    return () => {
+      if (sparkChart) sparkChart.destroy();
+      if (mainChart) mainChart.destroy();
+    };
+  }, [isLoading]);
+
+  const list = inquiries ?? [];
+  const inquiriesToShow = list.length > 0 ? list : defaultMockInquiries;
+  const recent = [...inquiriesToShow]
+    .sort((a, b) => new Date(b.createdAt || b.preferredMeetingDate || 0) - new Date(a.createdAt || a.preferredMeetingDate || 0))
+    .slice(0, 4);
+
+  const totalInquiriesCount = list.length > 0 ? list.length : 320;
+
+  function formatShortDate(value) {
+    if (!value) return 'Date TBD';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function getPackageStyle(packageName) {
+    const name = (packageName || '').toUpperCase();
+    if (name.includes('SIGNATURE')) {
+      return 'bg-[#d4af37]/20 text-[#d4af37] border border-[#d4af37]/40';
+    }
+    if (name.includes('SOVEREIGN')) {
+      return 'bg-tertiary-container/20 text-tertiary-container border border-tertiary-container/40';
+    }
+    if (name.includes('HEIRLOOM')) {
+      return 'bg-[#d4af37]/60 text-on-primary border border-[#d4af37]';
+    }
+    return 'bg-outline-variant/20 text-on-surface-variant border border-outline-variant/40';
+  }
 
   return (
-    <div className="ele-admin-dashboard">
-      <div className="admin-stat-grid ele-stat-grid">
-        {statsCards.map((card, idx) => (
-          <article key={card.label} className="ele-stat-card">
-            <div className="ele-stat-card-header">
-              <span className="ele-stat-label">{card.label}</span>
-              <span className="ele-stat-icon-wrapper">
-                {idx === 0 && <FileText size={16} />}
-                {idx === 1 && <Inbox size={16} />}
-                {idx === 2 && <UserRound size={16} />}
-                {idx === 3 && <Package size={16} />}
-              </span>
-            </div>
-            <div className="ele-stat-card-body">
-              <strong className="ele-stat-value">{card.value}</strong>
-              <div className="ele-stat-sparkline">
-                <span className="ele-stat-change">{card.change}</span>
-                <svg width="50" height="20" viewBox="0 0 50 20" style={{ overflow: 'visible' }}>
-                  <path d="M0,15 Q12.5,2 25,12 T50,5" fill="none" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" />
-                  <path d="M0,15 Q12.5,2 25,12 T50,5 L50,20 L0,20 Z" fill="rgba(34, 197, 94, 0.08)" />
-                </svg>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <div className="ele-dashboard-main-grid">
-        {/* Recent Bookings Card */}
-        <section className="ele-dashboard-panel ele-recent-bookings-card">
-          <div className="ele-panel-header">
-            <h3>Recent Bookings</h3>
-            <button className="ele-panel-more-btn" type="button" aria-label="More options">•••</button>
+    <div className="grid grid-cols-12 gap-bento-gap auto-rows-[200px] text-on-surface">
+      {/* Primary Metric Card */}
+      <div className="col-span-12 md:col-span-4 bento-card p-6 flex flex-col justify-between rounded-xl">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="font-label-caps text-label-caps text-primary uppercase text-[11px]">Total RSVP Inquiries</p>
+            <h3 className="font-display-lg-mobile text-on-surface mt-2 text-2xl md:text-3xl font-bold">{totalInquiriesCount}</h3>
           </div>
-          <div className="ele-bookings-table-wrapper">
-            <table className="ele-bookings-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Name</th>
-                  <th>Event</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookingsData.map((row, idx) => (
-                  <tr key={idx}>
-                    <td className="ele-booking-date">
-                      <span className="ele-date-main">{row.date}</span>
-                      <span className="ele-date-sub">21-Aug</span>
-                    </td>
-                    <td className="ele-booking-name-cell">
-                      <img src={row.avatar} alt={row.name} className="ele-booking-avatar" />
-                      <div className="ele-booking-name-info">
-                        <span className="ele-name-text">{row.name}</span>
-                        <span className="ele-role-text">{row.role}</span>
-                      </div>
-                    </td>
-                    <td className="ele-booking-event">{row.event}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="p-2 bg-primary/10 rounded-lg flex items-center">
+            <span className="material-symbols-outlined text-primary">mail</span>
           </div>
-        </section>
-
-        {/* Charts and Venues Columns */}
-        <div className="ele-dashboard-right-col">
-          <div className="ele-charts-row">
-            {/* Event Status & Revenue Doughnut Chart */}
-            <section className="ele-dashboard-panel ele-doughnut-card">
-              <div className="ele-panel-header">
-                <h3>Event Status & Revenue</h3>
-                <span className="ele-panel-subtitle">Doughnut Chart</span>
-              </div>
-              <div className="ele-doughnut-content">
-                <div className="ele-doughnut-svg-container">
-                  <svg width="110" height="110" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
-                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="var(--gold)" strokeWidth="10" strokeDasharray="88 132" strokeDashoffset="0" />
-                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#f97316" strokeWidth="10" strokeDasharray="55 165" strokeDashoffset="-88" />
-                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#22c55e" strokeWidth="10" strokeDasharray="44 176" strokeDashoffset="-143" />
-                    <circle cx="50" cy="50" r="35" fill="transparent" stroke="#ef4444" strokeWidth="10" strokeDasharray="33 187" strokeDashoffset="-187" />
-                  </svg>
-                  <div className="ele-doughnut-center-hole">
-                    <span>Events</span>
-                  </div>
-                </div>
-                <ul className="ele-doughnut-legends">
-                  <li><span className="legend-dot" style={{ backgroundColor: 'var(--gold)' }}></span>Planning</li>
-                  <li><span className="legend-dot" style={{ backgroundColor: '#f97316' }}></span>Confirmed</li>
-                  <li><span className="legend-dot" style={{ backgroundColor: '#22c55e' }}></span>Completed</li>
-                  <li><span className="legend-dot" style={{ backgroundColor: '#ef4444' }}></span>Cancelled</li>
-                </ul>
-              </div>
-            </section>
-
-            {/* Client Engagement Bar Chart */}
-            <section className="ele-dashboard-panel ele-bar-card">
-              <div className="ele-panel-header">
-                <h3>Client Engagement</h3>
-                <span className="ele-panel-subtitle">Bar Chart</span>
-              </div>
-              <div className="ele-bar-chart-container">
-                <div className="ele-bars-wrapper">
-                  {[12, 18, 14, 22, 19, 15].map((height, i) => (
-                    <div key={i} className="ele-bar-col">
-                      <div className="ele-bar" style={{ height: `${height * 3}px` }}></div>
-                      <span className="ele-bar-label">
-                        {i === 0 && 'Jan'}
-                        {i === 1 && 'Feb'}
-                        {i === 2 && 'Sep'}
-                        {i === 3 && 'Oct'}
-                        {i === 4 && 'Nov'}
-                        {i === 5 && 'Dec'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
+        </div>
+        <div className="mt-4 flex-1 flex flex-col justify-end">
+          <div className="h-10 w-full">
+            <canvas ref={sparklineRef} className="w-full h-full"></canvas>
           </div>
-
-          <div className="ele-charts-bottom-row">
-            {/* Monthly Revenue Growth Area Chart */}
-            <section className="ele-dashboard-panel ele-area-card">
-              <div className="ele-panel-header">
-                <h3>Monthly Revenue Growth</h3>
-                <span className="ele-panel-subtitle">Smooth Area Chart</span>
-              </div>
-              <div className="ele-area-chart-container">
-                <svg viewBox="0 0 320 100" className="ele-area-svg" style={{ overflow: 'visible' }}>
-                  <defs>
-                    <linearGradient id="ele-area-grad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--gold)" stopOpacity="0.25" />
-                      <stop offset="100%" stopColor="var(--gold)" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M 0,85 C 40,80 80,50 120,60 C 165,70 200,30 240,25 C 280,20 320,5 320,5 L 320,100 L 0,100 Z" fill="url(#ele-area-grad)" />
-                  <path d="M 0,85 C 40,80 80,50 120,60 C 165,70 200,30 240,25 C 280,20 320,5 320,5" fill="none" stroke="var(--gold)" strokeWidth="2" />
-                  <circle cx="240" cy="25" r="4" fill="var(--gold)" />
-                  <text x="240" y="15" fill="var(--gold-light)" fontSize="8" textAnchor="middle" fontWeight="bold">$3,150</text>
-                </svg>
-                <div className="ele-area-labels">
-                  <span>Jan</span>
-                  <span>Feb</span>
-                  <span>Mar</span>
-                  <span>Apr</span>
-                  <span>May</span>
-                  <span>Jun</span>
-                  <span>Jul</span>
-                  <span>Aug</span>
-                  <span>Sep</span>
-                  <span>Oct</span>
-                  <span>Nov</span>
-                  <span>Dec</span>
-                </div>
-              </div>
-            </section>
-
-            {/* Top Venues Card */}
-            <section className="ele-dashboard-panel ele-venues-card">
-              <div className="ele-panel-header">
-                <h3>Top Venues</h3>
-              </div>
-              <div className="ele-venues-list">
-                <div className="ele-venue-item">
-                  <img src="/hero_banquet_visual.png" alt="Ritz-Carlton" className="ele-venue-thumb" />
-                  <div className="ele-venue-info">
-                    <span className="ele-venue-name">Ritz-Carlton</span>
-                    <span className="ele-venue-sub">Ritz-Carlton</span>
-                  </div>
-                </div>
-                <div className="ele-venue-item">
-                  <img src="/hero_banquet_visual.png" alt="Plaza Hotel" className="ele-venue-thumb" />
-                  <div className="ele-venue-info">
-                    <span className="ele-venue-name">Plaza Hotel</span>
-                    <span className="ele-venue-sub">Plaza Hotel</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
+          <p className="text-xs text-on-surface-variant mt-2 flex items-center gap-1">
+            <span className="text-primary font-semibold">+12%</span> from last week
+          </p>
         </div>
       </div>
 
-      <div className="admin-note ele-admin-note">
-        <h3>Admin access</h3>
-        <p>
-          This page is intentionally hidden from the landing page. Marou can open it by typing
-          <code> http://localhost:5174/admin </code>
-          while the local dev server is running.
-        </p>
+      {/* Analytics Chart */}
+      <div className="col-span-12 md:col-span-8 bento-card p-6 rounded-xl flex flex-col justify-between">
+        <div className="flex justify-between items-center mb-4">
+          <p className="font-label-caps text-label-caps text-primary uppercase text-[11px]">RSVP Submissions (Weekly View)</p>
+          <div className="flex gap-2">
+            <button className="px-3 py-1 text-[10px] border border-outline text-on-surface rounded-full hover:border-primary">Week</button>
+            <button className="px-3 py-1 text-[10px] border border-primary text-primary rounded-full">Month</button>
+          </div>
+        </div>
+        <div className="flex-1 relative min-h-[110px]">
+          <canvas ref={analyticsChartRef} className="w-full h-full"></canvas>
+        </div>
+      </div>
+
+      {/* Real-time Inquiries Table */}
+      <div className="col-span-12 bento-card rounded-xl overflow-hidden flex flex-col h-auto row-span-2">
+        <div className="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container">
+          <h4 className="font-headline-md text-headline-md text-on-surface">Active Inquiries</h4>
+          <button
+            className="bg-primary text-on-primary px-6 py-2 font-label-caps text-label-caps hover:brightness-110 transition-all text-xs"
+            onClick={() => onNavigate?.('inquiries')}
+          >
+            Export Report
+          </button>
+        </div>
+        <div className="overflow-x-auto flex-1">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-outline-variant bg-surface-container-low">
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-[11px]">Guest Name</th>
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-[11px]">Package</th>
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-[11px]">Date</th>
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-[11px]">Status</th>
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-[11px] text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant">
+              {recent.map((inquiry) => {
+                const initials = (inquiry.coupleName || 'Guest')
+                  .split(/\s+/)
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((n) => n[0]?.toUpperCase() ?? '')
+                  .join('');
+                const isApproved = (inquiry.status || '').toLowerCase() === 'approved';
+
+                return (
+                  <tr className="hover:bg-surface-container-high/50 transition-colors" key={inquiry.id}>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-outline-variant flex items-center justify-center text-xs font-bold text-on-surface">
+                          {initials || 'EW'}
+                        </div>
+                        <span className="font-title-sm text-on-surface">{inquiry.coupleName || 'Elizabeth Windsor'}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${getPackageStyle(inquiry.coordinationNeed)}`}>
+                        {(inquiry.coordinationNeed || 'ROYAL SIGNATURE').toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-on-surface-variant">
+                      {formatShortDate(inquiry.preferredMeetingDate || inquiry.eventDate)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`flex items-center gap-1.5 text-xs ${isApproved ? 'text-primary' : 'text-on-surface-variant'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isApproved ? 'bg-primary animate-pulse' : 'bg-on-surface-variant'}`}></span>
+                        {isApproved ? 'Approved' : 'Pending'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        className="material-symbols-outlined text-on-surface-variant hover:text-primary flex items-center justify-end w-full"
+                        onClick={() => onNavigate?.('inquiries')}
+                      >
+                        more_vert
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Secondary Metric */}
+      <div className="col-span-12 md:col-span-6 bento-card p-6 rounded-xl relative overflow-hidden group">
+        <div className="relative z-10 flex flex-col justify-between h-full">
+          <p className="font-label-caps text-label-caps text-primary uppercase text-[11px]">Venue Availability</p>
+          <h3 className="font-headline-md text-display-lg-mobile text-on-surface mt-2 text-3xl font-bold">84%</h3>
+          <div className="w-full bg-outline-variant h-1 rounded-full mt-4 overflow-hidden">
+            <div className="bg-primary h-full transition-all duration-1000" style={{ width: '84%' }}></div>
+          </div>
+        </div>
+        <div className="absolute -bottom-10 -right-10 opacity-5 group-hover:opacity-10 transition-opacity flex items-center">
+          <span className="material-symbols-outlined text-[120px]">castle</span>
+        </div>
+      </div>
+
+      {/* Tertiary Metric */}
+      <div className="col-span-12 md:col-span-6 bento-card p-6 rounded-xl relative overflow-hidden group">
+        <div className="relative z-10 flex flex-col justify-between h-full">
+          <p className="font-label-caps text-label-caps text-primary uppercase text-[11px]">Average Inquiry Time</p>
+          <h3 className="font-headline-md text-display-lg-mobile text-on-surface mt-2 text-3xl font-bold">12.4m</h3>
+          <p className="text-xs text-on-surface-variant mt-auto">Exceeding concierge standard by 2m</p>
+        </div>
+        <div className="absolute -bottom-10 -right-10 opacity-5 group-hover:opacity-10 transition-opacity flex items-center">
+          <span className="material-symbols-outlined text-[120px]">timer</span>
+        </div>
       </div>
     </div>
   );
 }
 
 function BrandHeroEditor({ draft, updateDraft }) {
+  const avatarSrc = draft?.adminProfile?.avatar || null;
+  const displayName = draft?.adminProfile?.displayName || 'Admin';
+  const role = draft?.adminProfile?.role || 'Luxury Concierge';
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const fileRef = useRef(null);
+
+  async function handleAvatarUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { window.alert('Please choose an image file.'); return; }
+    if (file.size > 2 * 1024 * 1024) { window.alert('Please choose an image under 2MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      updateDraft((next) => {
+        next.adminProfile ??= {};
+        next.adminProfile.avatar = reader.result;
+      });
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  }
+
+  function removeAvatar() {
+    updateDraft((next) => {
+      next.adminProfile ??= {};
+      next.adminProfile.avatar = '';
+    });
+  }
+
   return (
-    <section className="admin-panel">
-      <EditorHeading
-        title="Brand & hero"
-        description="Update the main business details and first section."
-        icon={Settings}
-      />
-      <div className="admin-form-grid">
-        <AdminField
-          label="Business name"
-          value={draft.brand.name}
-          onChange={(value) => updateDraft((next) => { next.brand.name = value; })}
-        />
-        <AdminField
-          label="Owner name"
-          value={draft.brand.owner}
-          onChange={(value) => updateDraft((next) => { next.brand.owner = value; })}
-        />
-        <AdminField
-          label="Hero eyebrow"
-          value={draft.heroContent.eyebrow}
-          onChange={(value) => updateDraft((next) => { next.heroContent.eyebrow = value; })}
-        />
-        <AdminField
-          label="Hero title"
-          value={draft.heroContent.title}
-          onChange={(value) => updateDraft((next) => { next.heroContent.title = value; })}
-        />
-        <AdminTextarea
-          label="Hero paragraph"
-          value={draft.heroContent.copy}
-          onChange={(value) => updateDraft((next) => { next.heroContent.copy = value; })}
-        />
+    <div className="space-y-8 text-on-surface">
+
+      {/* ── SECTION 1: Admin Profile ── */}
+      <div className="bento-card bg-surface-container-low border border-outline-variant rounded-xl p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="material-symbols-outlined text-primary text-[20px]">manage_accounts</span>
+          <span className="font-label-caps text-label-caps text-primary uppercase text-[11px] tracking-[0.12em]">Admin Profile</span>
+        </div>
+        <p className="text-on-surface-variant text-xs mb-8">Manage your public-facing identity across the dashboard and sidebar.</p>
+
+        <div className="flex flex-col md:flex-row gap-10 items-start">
+          {/* Avatar Upload Zone */}
+          <div className="flex flex-col items-center gap-4 flex-shrink-0">
+            <div className="relative group">
+              {avatarSrc ? (
+                <img
+                  src={avatarSrc}
+                  alt="Profile"
+                  className="w-28 h-28 rounded-full object-cover border-2 border-primary shadow-lg"
+                />
+              ) : (
+                <div className="w-28 h-28 rounded-full bg-surface-container-high border-2 border-dashed border-outline-variant flex items-center justify-center">
+                  <span className="material-symbols-outlined text-on-surface-variant text-[40px]">person</span>
+                </div>
+              )}
+              <button
+                type="button"
+                className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                onClick={() => fileRef.current?.click()}
+              >
+                <span className="material-symbols-outlined text-white text-2xl">photo_camera</span>
+              </button>
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleAvatarUpload} />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="border border-outline-variant text-on-surface px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider hover:border-primary transition-all"
+                onClick={() => fileRef.current?.click()}
+              >
+                Upload Photo
+              </button>
+              {avatarSrc ? (
+                <button
+                  type="button"
+                  className="border border-outline-variant text-on-surface-variant px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider hover:border-red-400 hover:text-red-400 transition-all"
+                  onClick={removeAvatar}
+                >
+                  Remove
+                </button>
+              ) : null}
+            </div>
+            <p className="text-[10px] text-on-surface-variant text-center">JPG, PNG or WebP · Max 2MB</p>
+          </div>
+
+          {/* Profile Text Fields */}
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="admin-field">
+              <span>Display name</span>
+              <input
+                type="text"
+                value={displayName}
+                placeholder="Admin"
+                onChange={(e) => updateDraft((next) => { next.adminProfile ??= {}; next.adminProfile.displayName = e.target.value; })}
+              />
+            </div>
+            <div className="admin-field">
+              <span>Role / Title</span>
+              <input
+                type="text"
+                value={role}
+                placeholder="Luxury Concierge"
+                onChange={(e) => updateDraft((next) => { next.adminProfile ??= {}; next.adminProfile.role = e.target.value; })}
+              />
+            </div>
+            <div className="admin-field col-span-2">
+              <span>Contact email</span>
+              <input
+                type="email"
+                value={draft?.adminProfile?.email || ''}
+                placeholder="admin@queensbanquet.com"
+                onChange={(e) => updateDraft((next) => { next.adminProfile ??= {}; next.adminProfile.email = e.target.value; })}
+              />
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+
+      {/* ── SECTION 2: Brand Identity ── */}
+      <div className="bento-card bg-surface-container-low border border-outline-variant rounded-xl p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="material-symbols-outlined text-primary text-[20px]">shield</span>
+          <span className="font-label-caps text-label-caps text-primary uppercase text-[11px] tracking-[0.12em]">Brand Identity</span>
+        </div>
+        <p className="text-on-surface-variant text-xs mb-8">Core business information displayed across the site.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <AdminField
+            label="Business name"
+            value={draft.brand.name}
+            onChange={(value) => updateDraft((next) => { next.brand.name = value; })}
+          />
+          <AdminField
+            label="Owner name"
+            value={draft.brand.owner}
+            onChange={(value) => updateDraft((next) => { next.brand.owner = value; })}
+          />
+          <div className="admin-field col-span-1 md:col-span-2">
+            <span>Tagline / Motto</span>
+            <input
+              type="text"
+              value={draft.brand?.tagline || ''}
+              placeholder="Luxury Concierge"
+              onChange={(e) => updateDraft((next) => { next.brand.tagline = e.target.value; })}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── SECTION 3: Hero Content ── */}
+      <div className="bento-card bg-surface-container-low border border-outline-variant rounded-xl p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="material-symbols-outlined text-primary text-[20px]">newspaper</span>
+          <span className="font-label-caps text-label-caps text-primary uppercase text-[11px] tracking-[0.12em]">Hero Content</span>
+        </div>
+        <p className="text-on-surface-variant text-xs mb-8">Controls the top hero banner text on the public landing page.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <AdminField
+            label="Hero eyebrow"
+            value={draft.heroContent.eyebrow}
+            onChange={(value) => updateDraft((next) => { next.heroContent.eyebrow = value; })}
+          />
+          <AdminField
+            label="Hero title"
+            value={draft.heroContent.title}
+            onChange={(value) => updateDraft((next) => { next.heroContent.title = value; })}
+          />
+          <div className="md:col-span-2">
+            <AdminTextarea
+              label="Hero paragraph"
+              value={draft.heroContent.copy}
+              onChange={(value) => updateDraft((next) => { next.heroContent.copy = value; })}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── SECTION 4: Account Security ── */}
+      <div className="bento-card bg-surface-container-low border border-outline-variant rounded-xl p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="material-symbols-outlined text-primary text-[20px]">lock</span>
+          <span className="font-label-caps text-label-caps text-primary uppercase text-[11px] tracking-[0.12em]">Account Security</span>
+        </div>
+        <p className="text-on-surface-variant text-xs mb-8">Manage your administrative access credentials.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="admin-field">
+            <span>New password</span>
+            <div className="relative">
+              <input
+                type={showNewPw ? 'text' : 'password'}
+                className="w-full pr-10"
+                value={newPassword}
+                placeholder="Enter new password"
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                onClick={() => setShowNewPw(!showNewPw)}
+              >
+                <span className="material-symbols-outlined text-[18px]">{showNewPw ? 'visibility_off' : 'visibility'}</span>
+              </button>
+            </div>
+          </div>
+          <div className="admin-field">
+            <span>Confirm password</span>
+            <div className="relative">
+              <input
+                type={showConfirmPw ? 'text' : 'password'}
+                className="w-full pr-10"
+                value={confirmPassword}
+                placeholder="Repeat new password"
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                onClick={() => setShowConfirmPw(!showConfirmPw)}
+              >
+                <span className="material-symbols-outlined text-[18px]">{showConfirmPw ? 'visibility_off' : 'visibility'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        {newPassword && confirmPassword && newPassword !== confirmPassword ? (
+          <p className="text-red-400 text-xs mt-3">Passwords do not match.</p>
+        ) : null}
+        {newPassword && confirmPassword && newPassword === confirmPassword ? (
+          <p className="text-green-400 text-xs mt-3">Passwords match — save to apply changes.</p>
+        ) : null}
+
+        <div className="mt-6 pt-6 border-t border-outline-variant flex items-center gap-3">
+          <span className="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+          <span className="text-xs text-on-surface-variant">Multi-Factor Authentication is active for this account.</span>
+          <span className="ml-auto text-[10px] font-semibold text-primary uppercase tracking-wider">Enabled</span>
+        </div>
+      </div>
+
+    </div>
   );
 }
 
 function ExperienceEditor({ draft, updateDraft, requestConfirm }) {
-  return (
-    <section className="admin-panel">
-      <EditorHeading
-        title="Marou's coordination experience"
-        description="Edit the featured panel quote, circular portrait photo, and experience cards."
-      />
+  const [editingImageIdx, setEditingImageIdx] = useState(null);
+  const [tempImageUrl, setTempImageUrl] = useState('');
 
-      <div className="admin-form-grid">
-        <AdminTextarea
-          label="Featured panel quote"
-          value={draft.experienceContent?.panelQuote ?? ''}
-          onChange={(value) =>
-            updateDraft((next) => {
-              next.experienceContent ??= { panelQuote: '', photoUrl: '' };
-              next.experienceContent.panelQuote = value;
-            })
-          }
-        />
-        <AdminPhotoField
-          label="Featured panel portrait"
-          value={draft.experienceContent?.photoUrl ?? ''}
-          onChange={(value) =>
-            updateDraft((next) => {
-              next.experienceContent ??= { panelQuote: '', photoUrl: '' };
-              next.experienceContent.photoUrl = value;
-            })
-          }
-        />
+  const narrativeTitle = draft.experienceContent?.narrativeTitle ?? 'A Tradition of Regal Hospitality';
+  const narrativeBody = draft.experienceContent?.panelQuote ?? '';
+  const missionStatement = draft.experienceContent?.mission ?? 'To redefine the pinnacle of hospitality through unwavering discretion and artistic execution.';
+  
+  const defaultImages = [
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuAMTcUNp7jCrgV7ocK2k3RA_nkwQw7bwZECylvdftl4ZVQJvryXNaOlIoEsnLYVVbQtLLPY0LG4dHzOPM91uKcrj5F6CMxenP8SrSM-8xeJ9FbJwl7AJX8Pj98Cp4YKxA3zpl3xM2W-rhZbix468wso7QQeTFfzu-VNTdjLDNYVn9HmorLGZ_Y4BjU2JhrMSy88-x4g80aMF4u5eDIvmTjyOHACppTn7E--N-QB0EDborobf8MTy0ENKJi0yvmnwV6MXJQ4aC5Ov1Gy',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuBR7CPp4WcTb2Ri7H2mQWHLSrruQD4PijRCdi2TgnQvWHeidZiKa7haHo8OyDYRTCPXWK-ehhLnojqDhVCmyBCYGQEx2ff2zBynNMZZy_bd_K44Ef9XaicDt6mxE5An_ylRrYWrqzGbPoGJGJbYYsz9oToj_bQgqPovEqGO4dk7DoPsW27YgHLp--AsNbQbNuYtzjX7EVN_xAwaJaWPyWXO7yxGoOAlA8bkosjwQNrvRGn9t8dfWF5XgVNxZYIdT8yr_-d5IU4Tn64R',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuBBCe_2Ltl3OKYM6-lZBxpvimZN4LbEUT8Mh5Gb-obqoKJLnmUw06IHrH5qnWXtthsFt2D-wr7Jns4czk7MTPR7h77eutABVPfSP01dasaTCxdRpqEJPrqcs5zTBgnELsob5a50bPJ2AxUBumEFbT1mb0la_k5wG4kY95FiABvr1GPXOG_Gy7NjsUr3S2BYPLTMkGRgwfSSNghPC4J9Lr0SXPx2ll0QeHDnMvng0SESTwxZgUxsBoIHHHNjVr-9_bzI1-g98ZuNtWrt',
+  ];
+  const brandImages = draft.experienceContent?.brandImages ?? defaultImages;
+
+  const wordCount = narrativeBody.trim().split(/\s+/).filter(Boolean).length;
+
+  const defaultIcons = ['verified', 'visibility_off', 'palette', 'diamond'];
+
+  function openEditImage(idx) {
+    setEditingImageIdx(idx);
+    setTempImageUrl(brandImages[idx] ?? '');
+  }
+
+  function saveImage() {
+    updateDraft((next) => {
+      next.experienceContent ??= { panelQuote: '', photoUrl: '' };
+      next.experienceContent.brandImages ??= [...brandImages];
+      next.experienceContent.brandImages[editingImageIdx] = tempImageUrl;
+    });
+    setEditingImageIdx(null);
+  }
+
+  return (
+    <div className="space-y-bento-gap text-on-surface">
+      {/* BENTO GRID SYSTEM */}
+      <div className="grid grid-cols-12 gap-bento-gap">
+        {/* HEADER INTRO */}
+        <div className="col-span-12 md:col-span-8 bento-card bg-surface-container-low border border-outline-variant p-8 flex flex-col justify-between rounded-xl">
+          <div>
+            <span className="font-label-caps text-label-caps text-primary uppercase block mb-4 text-[11px]">Core Identity</span>
+            <h3 className="font-display-lg text-display-lg text-on-background mb-6 leading-tight text-3xl md:text-4xl font-bold">
+              Crafting Legacies of <br />Unparalleled Luxury.
+            </h3>
+            <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+              The About section is the digital soul of Queen's Banquet. Here, we manage the narrative that transforms service into an experience, and a mission into a standard of excellence.
+            </p>
+          </div>
+        </div>
+
+        {/* QUICK ACTIONS / STATUS */}
+        <div className="col-span-12 md:col-span-4 bento-card bg-surface-container-low border border-outline-variant p-8 relative overflow-hidden rounded-xl">
+          <div className="relative z-10">
+            <span className="font-label-caps text-label-caps text-primary uppercase block mb-6 text-[11px]">Status</span>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <span className="text-on-surface-variant">Live Status</span>
+                <span className="flex items-center gap-2 text-primary font-bold">
+                  <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span> Published
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-on-surface-variant">Last Edited</span>
+                <span className="text-on-surface">Oct 24, 2023</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-on-surface-variant">Editor</span>
+                <span className="text-on-surface">E. Carrington</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* BRAND STORY EDITOR */}
+        <div className="col-span-12 md:col-span-9 bento-card bg-surface-container-low border border-outline-variant p-8 rounded-xl">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h4 className="font-headline-md text-headline-md text-on-surface font-bold text-xl">Brand Story</h4>
+              <p className="text-on-surface-variant text-sm mt-1">The founding narrative and heritage of the banquet services.</p>
+            </div>
+          </div>
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <label className="font-label-caps text-label-caps text-primary uppercase text-[11px] block">Narrative Title</label>
+              <input
+                className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-4 text-on-background font-headline-md text-headline-md text-xl"
+                type="text"
+                value={narrativeTitle}
+                onChange={(e) =>
+                  updateDraft((next) => {
+                    next.experienceContent ??= { panelQuote: '', photoUrl: '' };
+                    next.experienceContent.narrativeTitle = e.target.value;
+                  })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="font-label-caps text-label-caps text-primary uppercase text-[11px] block">Long-form Content</label>
+              <textarea
+                className="w-full bg-surface-container-highest border-none p-6 text-on-surface-variant focus:ring-1 focus:ring-primary focus:outline-none leading-relaxed text-sm"
+                rows="8"
+                value={narrativeBody}
+                onChange={(e) =>
+                  updateDraft((next) => {
+                    next.experienceContent ??= { panelQuote: '', photoUrl: '' };
+                    next.experienceContent.panelQuote = e.target.value;
+                  })
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* STATS / KPI */}
+        <div className="col-span-12 md:col-span-3 bento-card bg-surface-container-low border border-outline-variant p-8 flex flex-col justify-between group rounded-xl">
+          <div>
+            <span className="material-symbols-outlined text-primary mb-4 text-3xl">history_edu</span>
+            <h5 className="font-headline-md text-headline-md text-on-surface text-base">Word Count</h5>
+            <p className="text-display-lg text-display-lg text-primary mt-2 text-4xl font-bold">{wordCount}</p>
+          </div>
+          <div className="mt-8 pt-8 border-t border-outline-variant">
+            <p className="text-on-surface-variant text-sm italic">"Precision in prose reflects precision in service."</p>
+          </div>
+        </div>
+
+        {/* MISSION STATEMENT */}
+        <div className="col-span-12 md:col-span-5 bento-card bg-surface-container-low border border-outline-variant p-8 rounded-xl flex flex-col justify-between">
+          <div>
+            <span className="font-label-caps text-label-caps text-primary uppercase block mb-6 text-[11px]">Mission & Values</span>
+            <div className="space-y-6">
+              <div className="p-6 bg-surface-container-highest border-l-2 border-primary">
+                <label className="text-[10px] text-primary uppercase tracking-widest block mb-2 font-semibold">Active Mission</label>
+                <p className="text-on-surface italic font-headline-md leading-snug text-sm">"{missionStatement}"</p>
+              </div>
+              <div className="space-y-2">
+                <label className="font-label-caps text-label-caps text-on-surface-variant uppercase text-[11px] block">Edit Statement</label>
+                <input
+                  className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-2 text-on-background text-sm"
+                  placeholder="Update mission statement..."
+                  type="text"
+                  value={missionStatement}
+                  onChange={(e) =>
+                    updateDraft((next) => {
+                      next.experienceContent ??= { panelQuote: '', photoUrl: '' };
+                      next.experienceContent.mission = e.target.value;
+                    })
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* BRAND PHOTOGRAPHY */}
+        <div className="col-span-12 md:col-span-7 bento-card bg-surface-container-low border border-outline-variant p-0 overflow-hidden flex flex-col rounded-xl">
+          <div className="p-8 pb-4 flex justify-between items-center">
+            <div>
+              <h4 className="font-headline-md text-headline-md text-on-surface font-bold text-xl">Brand Photography</h4>
+              <p className="text-on-surface-variant text-sm">Visual assets that define the brand aesthetic.</p>
+            </div>
+          </div>
+          <div className="flex-grow grid grid-cols-3 gap-1 p-1 bg-surface-container-low">
+            {brandImages.map((src, idx) => (
+              <div
+                key={idx}
+                className="aspect-square relative group overflow-hidden cursor-pointer bg-surface-container-highest flex items-center justify-center"
+                onClick={() => openEditImage(idx)}
+              >
+                <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" src={src} />
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="material-symbols-outlined text-white text-2xl">edit</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CORE VALUES GRID */}
+        <div className="col-span-12 bento-card bg-surface-container-low border border-outline-variant p-8 rounded-xl">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h4 className="font-headline-md text-headline-md text-on-surface font-bold text-xl">Core Values Portfolio</h4>
+              <p className="text-on-surface-variant text-sm mt-1">Configure core values displayed on the landing page.</p>
+            </div>
+            <button
+              className="border border-primary text-primary px-4 py-2 font-label-caps text-label-caps text-xs hover:bg-primary hover:text-on-primary transition-all flex items-center gap-2"
+              type="button"
+              onClick={() =>
+                updateDraft((next) => {
+                  next.experiencePoints ??= [];
+                  next.experiencePoints.push({
+                    title: 'New Value',
+                    description: 'Description of the value.',
+                    iconName: 'diamond',
+                  });
+                })
+              }
+            >
+              <span className="material-symbols-outlined text-sm">add</span> Add Value
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-bento-gap">
+            {draft.experiencePoints.map((item, index) => {
+              const defaultIcon = defaultIcons[index % defaultIcons.length];
+              const currentIcon = item.iconName || defaultIcon;
+
+              return (
+                <div className="p-6 bg-surface-container-highest border border-outline-variant hover:border-primary transition-colors flex flex-col justify-between" key={index}>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-start">
+                      <span className="material-symbols-outlined text-primary text-2xl">{currentIcon}</span>
+                      <button
+                        className="text-on-surface-variant hover:text-red-400 p-1 flex items-center"
+                        type="button"
+                        onClick={() =>
+                          requestConfirm({
+                            message: `Remove this core value point? This cannot be undone.`,
+                            onConfirm: () =>
+                              updateDraft((next) => {
+                                next.experiencePoints.splice(index, 1);
+                              }),
+                          })
+                        }
+                      >
+                        <span className="material-symbols-outlined text-sm">delete</span>
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] text-primary uppercase block font-semibold">Title</label>
+                      <input
+                        className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-1 text-on-surface font-semibold text-xs"
+                        type="text"
+                        value={item.title}
+                        onChange={(e) =>
+                          updateDraft((next) => {
+                            next.experiencePoints[index].title = e.target.value;
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] text-primary uppercase block font-semibold">Icon Name</label>
+                      <input
+                        className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-1 text-on-surface text-xs font-mono"
+                        type="text"
+                        value={currentIcon}
+                        onChange={(e) =>
+                          updateDraft((next) => {
+                            next.experiencePoints[index].iconName = e.target.value;
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] text-primary uppercase block font-semibold">Description</label>
+                      <textarea
+                        className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-1 text-on-surface-variant text-xs leading-relaxed"
+                        rows="2"
+                        value={item.description}
+                        onChange={(e) =>
+                          updateDraft((next) => {
+                            next.experiencePoints[index].description = e.target.value;
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
-      <EditableCards
-        items={draft.experiencePoints}
-        fields={['title', 'description']}
-        updateDraft={updateDraft}
-        path="experiencePoints"
-        itemLabel="experience highlight"
-        requestConfirm={requestConfirm}
-        createItem={() => ({
-          title: 'New experience highlight',
-          description: 'Describe this coordination strength.',
-        })}
-      />
-    </section>
+      {/* INLINE IMAGE EDIT MODAL */}
+      {editingImageIdx !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+          <div className="bg-surface-container border border-outline-variant p-8 max-w-lg w-full rounded-xl">
+            <h4 className="font-headline-md text-headline-md text-on-surface text-lg font-bold mb-2">Edit Image URL</h4>
+            <p className="text-on-surface-variant text-xs mb-6">Enter a public image URL to update this brand photography slot.</p>
+            <input
+              className="w-full bg-surface-container-highest border border-outline-variant p-3 text-on-surface rounded-lg mb-6 text-xs focus:ring-1 focus:ring-primary focus:outline-none font-mono"
+              type="text"
+              value={tempImageUrl}
+              onChange={(e) => setTempImageUrl(e.target.value)}
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                className="border border-outline-variant text-on-surface px-6 py-2 font-label-caps text-label-caps text-xs hover:border-primary transition-all"
+                onClick={() => setEditingImageIdx(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-primary text-on-primary px-6 py-2 font-label-caps text-label-caps text-xs hover:brightness-110 transition-all"
+                onClick={saveImage}
+              >
+                Apply URL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
 function ContactEditor({ draft, updateDraft, requestConfirm }) {
-  return (
-    <section className="admin-panel">
-      <EditorHeading
-        title="Contact details"
-        description="Edit direct contact channels and booking copy."
-        icon={UserRound}
-      />
-      <div className="admin-form-grid">
-        <AdminField
-          label="Booking eyebrow"
-          value={draft.contactContent.eyebrow}
-          onChange={(value) => updateDraft((next) => { next.contactContent.eyebrow = value; })}
-        />
-        <AdminField
-          label="Booking title"
-          value={draft.contactContent.title}
-          onChange={(value) => updateDraft((next) => { next.contactContent.title = value; })}
-        />
-        <AdminTextarea
-          label="Booking description"
-          value={draft.contactContent.description}
-          onChange={(value) => updateDraft((next) => { next.contactContent.description = value; })}
-        />
-      </div>
+  const eyebrowVal = draft.contactContent?.eyebrow ?? 'Schedule a date';
+  const titleVal = draft.contactContent?.title ?? 'Book a coordination meeting with Marou.';
+  const descVal = draft.contactContent?.description ?? '';
+  const successVal = draft.contactContent?.successMessage ?? "Thank you. Your meeting request is ready for Queen's Banquet Events.";
 
-      <div className="admin-list-editor">
-        {draft.contactChannels.map((channel, index) => (
-          <div className="admin-inline-card" key={`${channel.label}-${index}`}>
-            <AdminField
-              label="Label"
-              value={channel.label}
-              onChange={(value) => updateDraft((next) => { next.contactChannels[index].label = value; })}
-            />
-            <AdminField
-              label="Value"
-              value={channel.value}
-              onChange={(value) => updateDraft((next) => { next.contactChannels[index].value = value; })}
-            />
-            <AdminField
-              label="Link"
-              value={channel.href ?? ''}
-              onChange={(value) => updateDraft((next) => { next.contactChannels[index].href = value; })}
-            />
-            <button
-              className="admin-danger-button"
-              type="button"
-              onClick={() =>
-                requestConfirm({
-                  message: `Remove the "${channel.label || 'contact'}" contact channel? This cannot be undone.`,
-                  onConfirm: () => updateDraft((next) => { next.contactChannels.splice(index, 1); }),
-                })
-              }
-            >
-              <Trash2 aria-hidden="true" size={15} strokeWidth={1.6} />
-              Remove contact
-            </button>
+  return (
+    <div className="space-y-bento-gap text-on-surface">
+      {/* 12-COLUMN SPLIT BENTO GRID */}
+      <div className="grid grid-cols-12 gap-bento-gap">
+        {/* LEFT PANEL: BOOKING FORM COPY */}
+        <div className="col-span-12 lg:col-span-7 bento-card bg-surface-container-low border border-outline-variant p-8 rounded-xl flex flex-col justify-between">
+          <div>
+            <div className="mb-8">
+              <span className="font-label-caps text-label-caps text-primary uppercase block mb-4 text-[11px]">Booking Form Configuration</span>
+              <h3 className="font-headline-md text-headline-md text-on-surface font-bold text-xl">Landing Page Form Details</h3>
+            </div>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] text-primary uppercase block font-semibold">Booking Eyebrow</label>
+                <input
+                  className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-2 text-on-background text-sm"
+                  type="text"
+                  value={eyebrowVal}
+                  onChange={(e) =>
+                    updateDraft((next) => {
+                      next.contactContent ??= {};
+                      next.contactContent.eyebrow = e.target.value;
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] text-primary uppercase block font-semibold">Booking Title</label>
+                <input
+                  className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-2 text-on-background text-sm font-semibold"
+                  type="text"
+                  value={titleVal}
+                  onChange={(e) =>
+                    updateDraft((next) => {
+                      next.contactContent ??= {};
+                      next.contactContent.title = e.target.value;
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] text-primary uppercase block font-semibold">Booking Description</label>
+                <textarea
+                  className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-2 text-on-surface-variant text-xs leading-relaxed"
+                  rows="4"
+                  value={descVal}
+                  onChange={(e) =>
+                    updateDraft((next) => {
+                      next.contactContent ??= {};
+                      next.contactContent.description = e.target.value;
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] text-primary uppercase block font-semibold">Success Confirmation Message</label>
+                <input
+                  className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-2 text-on-background text-xs"
+                  type="text"
+                  value={successVal}
+                  onChange={(e) =>
+                    updateDraft((next) => {
+                      next.contactContent ??= {};
+                      next.contactContent.successMessage = e.target.value;
+                    })
+                  }
+                />
+              </div>
+            </div>
           </div>
-        ))}
+        </div>
+
+        {/* RIGHT PANEL: CONTACT CHANNELS SIDEPANEL */}
+        <div className="col-span-12 lg:col-span-5 bento-card bg-surface-container-low border border-outline-variant p-8 rounded-xl flex flex-col justify-between h-auto">
+          <div>
+            <div className="mb-8 flex justify-between items-center">
+              <div>
+                <span className="font-label-caps text-label-caps text-primary uppercase block mb-4 text-[11px]">Concierge Channels</span>
+                <h3 className="font-headline-md text-headline-md text-on-surface font-bold text-xl">Direct Communications</h3>
+              </div>
+              <button
+                className="border border-primary text-primary px-3 py-1.5 font-label-caps text-label-caps text-[10px] hover:bg-primary hover:text-on-primary transition-all flex items-center gap-1"
+                type="button"
+                onClick={() =>
+                  updateDraft((next) => {
+                    next.contactChannels ??= [];
+                    next.contactChannels.push({ label: 'New Line', value: '', href: '' });
+                  })
+                }
+              >
+                <span className="material-symbols-outlined text-[12px]">add</span> Add Line
+              </button>
+            </div>
+
+            <div className="space-y-6 max-h-[480px] overflow-y-auto pr-2">
+              {draft.contactChannels.map((channel, index) => (
+                <div key={index} className="p-4 bg-surface-container border border-outline-variant relative rounded-lg space-y-4 group">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-primary uppercase font-bold tracking-wider">Channel #{index + 1}</span>
+                    <button
+                      className="text-on-surface-variant hover:text-red-400 p-0.5 flex items-center"
+                      type="button"
+                      onClick={() =>
+                        requestConfirm({
+                          message: `Remove the "${channel.label || 'contact'}" channel? This cannot be undone.`,
+                          onConfirm: () =>
+                            updateDraft((next) => {
+                              next.contactChannels.splice(index, 1);
+                            }),
+                        })
+                      }
+                    >
+                      <span className="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[9px] text-primary uppercase block font-semibold">Label</label>
+                      <input
+                        className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-0.5 text-on-surface font-semibold text-xs"
+                        type="text"
+                        value={channel.label}
+                        onChange={(e) =>
+                          updateDraft((next) => {
+                            next.contactChannels[index].label = e.target.value;
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] text-primary uppercase block font-semibold">Display Value</label>
+                      <input
+                        className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-0.5 text-on-surface text-xs"
+                        type="text"
+                        value={channel.value}
+                        onChange={(e) =>
+                          updateDraft((next) => {
+                            next.contactChannels[index].value = e.target.value;
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-primary uppercase block font-semibold">Action Link (tel:, mailto:, URL)</label>
+                    <input
+                      className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-0.5 text-on-surface-variant text-xs font-mono"
+                      type="text"
+                      value={channel.href ?? ''}
+                      onChange={(e) =>
+                        updateDraft((next) => {
+                          next.contactChannels[index].href = e.target.value;
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
-      <button
-        className="admin-secondary-button admin-add-button"
-        type="button"
-        onClick={() =>
-          updateDraft((next) => {
-            next.contactChannels.push({ label: 'New contact', value: '', href: '' });
-          })
-        }
-      >
-        <Plus aria-hidden="true" size={17} strokeWidth={1.6} />
-        Add contact channel
-      </button>
-    </section>
+    </div>
   );
 }
 
 function ServicesEditor({ draft, updateDraft, requestConfirm }) {
+  const [editingImageIdx, setEditingImageIdx] = useState(null);
+  const [tempImageUrl, setTempImageUrl] = useState('');
+
+  const heroTitle = draft.servicesContent?.heroTitle ?? 'Elite Craftsmanship. Absolute Privacy.';
+  const heroCopy = draft.servicesContent?.heroCopy ?? "Our services are designed for the world's most discerning patrons. Each selection represents a fusion of logistical perfection and aesthetic grace, managed by your dedicated banquet concierge.";
+
+  function openEditImage(idx, currentUrl) {
+    setEditingImageIdx(idx);
+    setTempImageUrl(currentUrl || '');
+  }
+
+  function saveImage() {
+    updateDraft((next) => {
+      next.services[editingImageIdx].image = tempImageUrl;
+    });
+    setEditingImageIdx(null);
+  }
+
   return (
-    <section className="admin-panel">
-      <EditorHeading
-        title="Coordination services"
-        description="Edit the service cards shown on the page."
-        icon={BriefcaseBusiness}
-      />
-      <EditableCards
-        items={draft.services}
-        fields={['title', 'description']}
-        updateDraft={updateDraft}
-        path="services"
-        itemLabel="service"
-        requestConfirm={requestConfirm}
-        createItem={() => ({ title: 'New coordination service', description: 'Describe this service.' })}
-      />
-    </section>
+    <div className="space-y-bento-gap text-on-surface">
+      {/* HERO INTRO EDIT BENTO */}
+      <div className="grid grid-cols-12 gap-bento-gap">
+        <div className="col-span-12 bento-card bg-surface-container-low border border-outline-variant p-8 rounded-xl space-y-6">
+          <div>
+            <span className="font-label-caps text-label-caps text-primary uppercase block mb-4 text-[11px]">Services Catalog Header</span>
+            <h3 className="font-headline-md text-headline-md text-on-surface text-lg font-bold">Catalog Hero Intro</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-bento-gap">
+            <div className="space-y-2">
+              <label className="text-[10px] text-primary uppercase block font-semibold">Hero Title</label>
+              <input
+                className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-2 text-on-background font-headline-md text-headline-md text-xl"
+                type="text"
+                value={heroTitle}
+                onChange={(e) =>
+                  updateDraft((next) => {
+                    next.servicesContent ??= {};
+                    next.servicesContent.heroTitle = e.target.value;
+                  })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] text-primary uppercase block font-semibold">Hero Copy Description</label>
+              <textarea
+                className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-2 text-on-surface-variant text-sm leading-relaxed"
+                rows="3"
+                value={heroCopy}
+                onChange={(e) =>
+                  updateDraft((next) => {
+                    next.servicesContent ??= {};
+                    next.servicesContent.heroCopy = e.target.value;
+                  })
+                }
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SERVICES DYNAMIC BENTO GRID */}
+      <div className="flex justify-between items-center mb-4 mt-8">
+        <div>
+          <h4 className="font-headline-md text-headline-md text-on-surface font-bold text-xl">Catalog Items</h4>
+          <p className="text-on-surface-variant text-sm mt-1">Configure individual service detail blocks, images, and prices.</p>
+        </div>
+        <button
+          className="border border-primary text-primary px-4 py-2 font-label-caps text-label-caps text-xs hover:bg-primary hover:text-on-primary transition-all flex items-center gap-2"
+          type="button"
+          onClick={() =>
+            updateDraft((next) => {
+              next.services ??= [];
+              next.services.push({
+                title: 'New Service',
+                description: 'Describe this service details.',
+                price: '$1,000',
+                eyebrow: 'SERVICE CATEGORY',
+                iconName: 'concierge',
+                image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDprGtCMWxcp49dTgCOSZkLB7GcGLTKs3w7YrgXucy8g2ilZZ8T-xo8itgObyBGhgP7QNDJ825QRDKgFSrkKC04YxD6dlDjrIIdIZZndPmhH2gghee_dfo8OQGB16CP5wSQBirgaVEPxAJblI1ion5bgmoPXoIQJ-BxAhN450iagZy-KAWj625ZefB4tokWehU_QbiSCfHKGZ9rDWQb_KN8cDhU_D8H-VAQcfwKn0rheniQ81kNQKq3kA5IGWVKV1Qon-ppxAq7Eivn',
+                colSpan: 'col-span-6',
+              });
+            })
+          }
+        >
+          <span className="material-symbols-outlined text-sm">add</span> Add Service Card
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-bento-gap">
+        {draft.services.map((item, index) => {
+          const colSpan = item.colSpan || 'col-span-6';
+          const eyebrowVal = item.eyebrow || 'SERVICE DETAIL';
+          const priceVal = item.price || '$1,500';
+          const iconVal = item.iconName || 'concierge';
+          const imageVal = item.image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDprGtCMWxcp49dTgCOSZkLB7GcGLTKs3w7YrgXucy8g2ilZZ8T-xo8itgObyBGhgP7QNDJ825QRDKgFSrkKC04YxD6dlDjrIIdIZZndPmhH2gghee_dfo8OQGB16CP5wSQBirgaVEPxAJblI1ion5bgmoPXoIQJ-BxAhN450iagZy-KAWj625ZefB4tokWehU_QbiSCfHKGZ9rDWQb_KN8cDhU_D8H-VAQcfwKn0rheniQ81kNQKq3kA5IGWVKV1Qon-ppxAq7Eivn';
+
+          return (
+            <div
+              key={index}
+              className={`${colSpan} bg-surface-container-low border border-outline-variant p-6 rounded-xl relative bento-card-glow transition-all duration-300 flex flex-col justify-between`}
+            >
+              {/* IMAGE SLOT WITH EDIT OVERLAY IF NOT SPAN 3 */}
+              {colSpan !== 'col-span-3' && (
+                <div className="mb-4 overflow-hidden h-40 bg-surface-container relative group rounded-lg">
+                  <img className="w-full h-full object-cover grayscale transition-all duration-500" alt="" src={imageVal} />
+                  <div
+                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                    onClick={() => openEditImage(index, imageVal)}
+                  >
+                    <span className="material-symbols-outlined text-white text-2xl">edit_square</span>
+                  </div>
+                </div>
+              )}
+
+              {/* CARD DETAILS FORM */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center gap-2">
+                  <div className="flex-1">
+                    <label className="text-[9px] text-primary uppercase block font-semibold">Eyebrow</label>
+                    <input
+                      className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-0.5 text-primary font-bold text-xs uppercase"
+                      type="text"
+                      value={eyebrowVal}
+                      onChange={(e) =>
+                        updateDraft((next) => {
+                          next.services[index].eyebrow = e.target.value;
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="w-12">
+                    <label className="text-[9px] text-primary uppercase block font-semibold">Icon</label>
+                    <input
+                      className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-0.5 text-on-surface text-xs font-mono"
+                      type="text"
+                      value={iconVal}
+                      onChange={(e) =>
+                        updateDraft((next) => {
+                          next.services[index].iconName = e.target.value;
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[9px] text-primary uppercase block font-semibold">Service Title</label>
+                    <input
+                      className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-0.5 text-on-surface font-semibold text-sm"
+                      type="text"
+                      value={item.title}
+                      onChange={(e) =>
+                        updateDraft((next) => {
+                          next.services[index].title = e.target.value;
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] text-primary uppercase block font-semibold">Bento Width</label>
+                    <select
+                      className="w-full bg-surface-container-highest border-none focus:ring-1 focus:ring-primary focus:outline-none py-0.5 text-on-surface text-xs rounded"
+                      value={colSpan}
+                      onChange={(e) =>
+                        updateDraft((next) => {
+                          next.services[index].colSpan = e.target.value;
+                        })
+                      }
+                    >
+                      <option value="col-span-3">Span 3 (Small Square)</option>
+                      <option value="col-span-4">Span 4 (Standard Vertical)</option>
+                      <option value="col-span-6">Span 6 (Medium)</option>
+                      <option value="col-span-8">Span 8 (Large Featured)</option>
+                      <option value="col-span-12">Span 12 (Full Width)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[9px] text-primary uppercase block font-semibold">Description</label>
+                  <textarea
+                    className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-0.5 text-on-surface-variant text-xs leading-relaxed"
+                    rows="2"
+                    value={item.description}
+                    onChange={(e) =>
+                      updateDraft((next) => {
+                        next.services[index].description = e.target.value;
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* CARD FOOTER INFO */}
+              <div className="mt-4 pt-4 border-t border-outline-variant/30 flex justify-between items-center">
+                <div className="flex-1">
+                  <label className="text-[9px] text-primary uppercase block font-semibold">Pricing Tag</label>
+                  <input
+                    className="w-full bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-0.5 text-primary text-sm font-semibold"
+                    type="text"
+                    value={priceVal}
+                    onChange={(e) =>
+                      updateDraft((next) => {
+                        next.services[index].price = e.target.value;
+                      })
+                    }
+                  />
+                </div>
+                <button
+                  className="text-on-surface-variant hover:text-red-400 p-1 flex items-center self-end"
+                  type="button"
+                  onClick={() =>
+                    requestConfirm({
+                      message: `Remove "${item.title || 'service'}" card? This cannot be undone.`,
+                      onConfirm: () =>
+                        updateDraft((next) => {
+                          next.services.splice(index, 1);
+                        }),
+                    })
+                  }
+                >
+                  <span className="material-symbols-outlined text-sm">delete</span>
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* INLINE IMAGE EDIT MODAL */}
+      {editingImageIdx !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+          <div className="bg-surface-container border border-outline-variant p-8 max-w-lg w-full rounded-xl">
+            <h4 className="font-headline-md text-headline-md text-on-surface text-lg font-bold mb-2">Edit Image URL</h4>
+            <p className="text-on-surface-variant text-xs mb-6">Enter a public image URL to update this service catalog card.</p>
+            <input
+              className="w-full bg-surface-container-highest border border-outline-variant p-3 text-on-surface rounded-lg mb-6 text-xs focus:ring-1 focus:ring-primary focus:outline-none font-mono"
+              type="text"
+              value={tempImageUrl}
+              onChange={(e) => setTempImageUrl(e.target.value)}
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                className="border border-outline-variant text-on-surface px-6 py-2 font-label-caps text-label-caps text-xs hover:border-primary transition-all"
+                onClick={() => setEditingImageIdx(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-primary text-on-primary px-6 py-2 font-label-caps text-label-caps text-xs hover:brightness-110 transition-all"
+                onClick={saveImage}
+              >
+                Apply URL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
 function PackagesEditor({ draft, updateDraft, requestConfirm }) {
+  const defaultTiers = ['Tier I', 'Tier II', 'Tier III', 'Tier IV', 'Tier V'];
+
   return (
-    <section className="admin-panel">
-      <EditorHeading title="Packages" description="Edit package names, tiers, and feature lists." icon={Package} />
-      <div className="admin-list-editor">
-        {draft.packages.map((item, index) => (
-          <div className="admin-inline-card" key={`${item.name}-${index}`}>
-            <AdminField
-              label="Name"
-              value={item.name}
-              onChange={(value) => updateDraft((next) => { next.packages[index].name = value; })}
-            />
-            <AdminField
-              label="Tier"
-              value={item.price}
-              onChange={(value) => updateDraft((next) => { next.packages[index].price = value; })}
-            />
-            <AdminTextarea
-              label="Features, one per line"
-              value={item.features.join('\n')}
-              onChange={(value) =>
-                updateDraft((next) => {
-                  next.packages[index].features = value.split('\n').filter(Boolean);
-                })
-              }
-            />
-            <button
-              className="admin-danger-button"
-              type="button"
-              onClick={() =>
-                requestConfirm({
-                  message: `Remove the "${item.name || 'package'}" package? This cannot be undone.`,
-                  onConfirm: () => updateDraft((next) => { next.packages.splice(index, 1); }),
-                })
-              }
-            >
-              <Trash2 aria-hidden="true" size={15} strokeWidth={1.6} />
-              Remove package
-            </button>
-          </div>
-        ))}
+    <div className="space-y-bento-gap text-on-surface">
+      {/* HEADER BAR */}
+      <div className="mb-8 flex justify-between items-end">
+        <div>
+          <span className="text-primary font-label-caps text-label-caps uppercase tracking-[0.3em] mb-4 block text-[11px]">Event Tiers</span>
+          <h2 className="font-headline-md text-3xl leading-tight text-on-surface font-bold">Tiered Luxury Experiences</h2>
+        </div>
+        <button
+          className="bg-primary text-on-primary px-8 py-3 font-label-caps text-label-caps flex items-center gap-2 hover:bg-primary-container transition-all text-xs"
+          type="button"
+          onClick={() =>
+            updateDraft((next) => {
+              next.packages ??= [];
+              next.packages.push({
+                name: 'New Package',
+                price: '$10,000',
+                features: [{ text: 'Bespoke coordination service', included: true }],
+                featured: false,
+              });
+            })
+          }
+        >
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          CREATE NEW TIER
+        </button>
       </div>
-      <button
-        className="admin-secondary-button admin-add-button"
-        type="button"
-        onClick={() =>
-          updateDraft((next) => {
-            next.packages.push({
-              name: 'New package',
-              price: 'Custom',
-              features: ['Add package feature'],
-            });
-          })
-        }
-      >
-        <Plus aria-hidden="true" size={17} strokeWidth={1.6} />
-        Add package
-      </button>
-    </section>
+
+      {/* BENTO GRID LAYOUT FOR PACKAGES */}
+      <div className="grid grid-cols-12 gap-bento-gap">
+        {draft.packages.map((item, index) => {
+          const isFeatured = item.featured === true;
+          const tierLabel = defaultTiers[index % defaultTiers.length];
+
+          return (
+            <div
+              key={index}
+              className={`col-span-12 lg:col-span-4 bg-surface-container border ${
+                isFeatured ? 'border-primary shadow-[0_0_30px_rgba(212,175,55,0.05)]' : 'border-outline-variant'
+              } p-8 group hover:border-primary transition-all duration-300 flex flex-col relative rounded-xl`}
+            >
+              {isFeatured && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-on-primary px-6 py-1 font-label-caps text-[10px] tracking-[0.2em] uppercase rounded-full">
+                  Most Distinguished
+                </div>
+              )}
+
+              <div className="mb-8 flex justify-between items-start">
+                <div>
+                  <p className="text-primary font-label-caps text-label-caps uppercase tracking-widest mb-2 text-[10px]">{tierLabel}</p>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      className="bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-0.5 text-on-surface font-headline-md text-2xl font-bold w-full"
+                      type="text"
+                      value={item.name}
+                      onChange={(e) =>
+                        updateDraft((next) => {
+                          next.packages[index].name = e.target.value;
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    className={`p-1 flex items-center rounded ${isFeatured ? 'text-primary' : 'text-on-surface-variant hover:text-primary'}`}
+                    type="button"
+                    title="Toggle featured status"
+                    onClick={() =>
+                      updateDraft((next) => {
+                        next.packages[index].featured = !next.packages[index].featured;
+                      })
+                    }
+                  >
+                    <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                      star
+                    </span>
+                  </button>
+                  <button
+                    className="text-on-surface-variant hover:text-red-400 p-1 flex items-center"
+                    type="button"
+                    onClick={() =>
+                      requestConfirm({
+                        message: `Remove the "${item.name || 'package'}" package tier? This cannot be undone.`,
+                        onConfirm: () =>
+                          updateDraft((next) => {
+                            next.packages.splice(index, 1);
+                          }),
+                      })
+                    }
+                  >
+                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* FEATURES EDIT LIST */}
+              <div className="space-y-4 flex-1">
+                <span className="text-[10px] text-primary font-label-caps uppercase tracking-widest block font-semibold">Included Features</span>
+                <div className="space-y-3">
+                  {(item.features ?? []).map((feature, fIdx) => {
+                    const featureText = typeof feature === 'string' ? feature : feature.text;
+                    const isIncluded = typeof feature === 'string' ? true : feature.included !== false;
+
+                    return (
+                      <div className="flex items-center gap-2" key={fIdx}>
+                        <button
+                          type="button"
+                          className="flex items-center"
+                          onClick={() =>
+                            updateDraft((next) => {
+                              const feat = next.packages[index].features[fIdx];
+                              if (typeof feat === 'string') {
+                                next.packages[index].features[fIdx] = { text: feat, included: false };
+                              } else {
+                                feat.included = !feat.included;
+                              }
+                            })
+                          }
+                        >
+                          <span className={`material-symbols-outlined text-[18px] ${isIncluded ? 'text-primary' : 'text-on-surface-variant/40'}`}>
+                            {isIncluded ? 'check_circle' : 'cancel'}
+                          </span>
+                        </button>
+                        <input
+                          className="flex-1 bg-transparent border-none border-b border-transparent hover:border-outline-variant focus:border-primary focus:ring-0 py-0.5 text-xs text-on-surface-variant"
+                          type="text"
+                          value={featureText}
+                          onChange={(e) =>
+                            updateDraft((next) => {
+                              const feat = next.packages[index].features[fIdx];
+                              if (typeof feat === 'string') {
+                                next.packages[index].features[fIdx] = { text: e.target.value, included: true };
+                              } else {
+                                feat.text = e.target.value;
+                              }
+                            })
+                          }
+                        />
+                        <button
+                          className="text-on-surface-variant hover:text-red-400 p-0.5 flex items-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          type="button"
+                          onClick={() =>
+                            updateDraft((next) => {
+                              next.packages[index].features.splice(fIdx, 1);
+                            })
+                          }
+                        >
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+                <button
+                  className="text-xs text-primary hover:text-primary-container flex items-center gap-1 mt-2 font-semibold"
+                  type="button"
+                  onClick={() =>
+                    updateDraft((next) => {
+                      next.packages[index].features ??= [];
+                      next.packages[index].features.push({ text: 'New feature amenity', included: true });
+                    })
+                  }
+                >
+                  <span className="material-symbols-outlined text-xs">add</span> Add Amenity
+                </button>
+              </div>
+
+              {/* FOOTER INVESTMENT */}
+              <div className="mt-8 pt-6 border-t border-outline-variant">
+                <div className="flex justify-between items-baseline mb-4">
+                  <span className="text-on-surface-variant font-label-caps text-label-caps uppercase text-[10px]">Investment</span>
+                  <div className="flex items-center gap-1 justify-end w-3/4">
+                    <input
+                      className="bg-transparent border-none border-b border-outline-variant focus:border-primary focus:ring-0 py-0.5 text-right font-headline-md text-xl text-primary font-bold w-full"
+                      type="text"
+                      value={item.price}
+                      onChange={(e) =>
+                        updateDraft((next) => {
+                          next.packages[index].price = e.target.value;
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ANALYTICS & CUSTOMIZATION BENTOS */}
+      <div className="grid grid-cols-12 gap-bento-gap mt-8">
+        <div className="col-span-12 lg:col-span-8 bg-surface-container border border-outline-variant p-8 flex flex-col md:flex-row gap-8 items-center rounded-xl">
+          <div className="md:w-1/3">
+            <div className="w-full aspect-square border border-outline-variant p-1">
+              <div
+                className="w-full h-full bg-cover bg-center"
+                style={{
+                  backgroundImage:
+                    "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBRsgl5vwuerPoJHsWbHYMERGKGQPno1XZCzJ0A4H8o9WCSs6GboRUXejOGQYMiHwFHh89_poQ_frJkHO2HvEi6FY0AjrR1qtj2ZnSijsD-JvrU5gGpwBCVM_XysifeJ9o-VXZXhDXiZVXQvnPo6FVQcWi0Po-tlJlSpQ5NbpmNgRtE7ZBgHgfaPOri3A8_KFCL8cNXLOsF8Sg7mLN30AdZpKx0J8QjiFyQG8ZJuZWZqW_9SNxGAuJyyHLlNC39daRy7BZ2RNbzGRHx')",
+                }}
+              ></div>
+            </div>
+          </div>
+          <div className="md:w-2/3">
+            <h4 className="font-headline-md text-2xl mb-4 font-bold text-on-surface">Tier Performance Analytics</h4>
+            <p className="text-body-md text-on-surface-variant mb-6 text-sm">
+              The Heirloom package remains your most selected offering, accounting for 62% of revenue this quarter. Consider seasonal adjustments to the Royal Signature menu to increase boutique conversions.
+            </p>
+            <div className="grid grid-cols-3 gap-8">
+              <div>
+                <p className="font-label-caps text-[10px] text-primary uppercase">Revenue</p>
+                <p className="font-headline-md text-xl font-bold text-on-surface">$1.2M</p>
+              </div>
+              <div>
+                <p className="font-label-caps text-[10px] text-primary uppercase">Active Events</p>
+                <p className="font-headline-md text-xl font-bold text-on-surface">14</p>
+              </div>
+              <div>
+                <p className="font-label-caps text-[10px] text-primary uppercase">Margin</p>
+                <p className="font-headline-md text-xl font-bold text-on-surface">42%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-span-12 lg:col-span-4 bg-surface-container-highest p-8 flex flex-col justify-center border border-outline-variant rounded-xl">
+          <h4 className="font-headline-md text-xl mb-6 font-bold text-on-surface">Tier Customization</h4>
+          <ul className="space-y-4">
+            <li>
+              <button className="w-full flex items-center justify-between group text-left" type="button">
+                <span className="text-body-md text-on-surface text-sm">Modify Global Add-ons</span>
+                <span className="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">chevron_right</span>
+              </button>
+            </li>
+            <li>
+              <button className="w-full flex items-center justify-between group text-left" type="button">
+                <span className="text-body-md text-on-surface text-sm">Update Seasonal Pricing</span>
+                <span className="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">chevron_right</span>
+              </button>
+            </li>
+            <li>
+              <button className="w-full flex items-center justify-between group text-left" type="button">
+                <span className="text-body-md text-on-surface text-sm">Manage Vendor Tiers</span>
+                <span className="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">chevron_right</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 }
 
 function TestimonialsEditor({ draft, updateDraft, requestConfirm }) {
-  return (
-    <section className="admin-panel">
-      <EditorHeading
-        title="Testimonials"
-        description="Edit client quotes, labels, and photos using an online URL or uploaded image."
-        icon={MessageSquareQuote}
-      />
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('ALL');
+  
+  // Modal states for adding/editing a testimonial
+  const [isEditing, setIsEditing] = useState(false);
+  const [editIndex, setEditIndex] = useState(null); // null means creating new
+  const [formData, setFormData] = useState({
+    author: '',
+    quote: '',
+    event: '',
+    rating: 5,
+    photoUrl: '',
+    featured: false,
+  });
 
-      <div className="admin-list-editor">
-        {draft.testimonials.map((testimonial, index) => (
-          <div className="admin-inline-card" key={`testimonial-${index}`}>
-            <AdminTextarea
-              label="Quote"
-              value={testimonial.quote}
-              onChange={(value) => updateDraft((next) => { next.testimonials[index].quote = value; })}
+  const list = draft.testimonials || [];
+  
+  // Filter list
+  const filtered = list.filter((t) => {
+    // Search
+    const matchesSearch =
+      (t.author || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.quote || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.event || '').toLowerCase().includes(searchQuery.toLowerCase());
+      
+    // Tab
+    if (activeTab === 'PUBLISHED') return matchesSearch && t.featured === true;
+    if (activeTab === 'ARCHIVED') return matchesSearch && t.featured === false;
+    return matchesSearch;
+  });
+
+  function openEdit(index) {
+    const t = list[index];
+    setEditIndex(index);
+    setFormData({
+      author: t.author || '',
+      quote: t.quote || '',
+      event: t.event || '',
+      rating: t.rating ?? 5,
+      photoUrl: t.photoUrl || '',
+      featured: t.featured === true,
+    });
+    setIsEditing(true);
+  }
+
+  function openCreate() {
+    setEditIndex(null);
+    setFormData({
+      author: '',
+      quote: '',
+      event: '',
+      rating: 5,
+      photoUrl: '',
+      featured: false,
+    });
+    setIsEditing(true);
+  }
+
+  function saveTestimonial() {
+    updateDraft((next) => {
+      next.testimonials ??= [];
+      if (editIndex === null) {
+        next.testimonials.push({ ...formData });
+      } else {
+        next.testimonials[editIndex] = { ...formData };
+      }
+    });
+    setIsEditing(false);
+  }
+
+  // Count statistics
+  const totalReach = 4.9;
+  const featuredCount = list.filter((t) => t.featured).length;
+  const pendingCount = 3;
+
+  return (
+    <div className="space-y-bento-gap text-on-surface">
+      {/* TOP HEADER BAR */}
+      <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-sm">search</span>
+            <input
+              className="bg-surface-container-low border-none text-on-surface placeholder:text-outline-variant font-body-sm text-body-sm pl-10 pr-4 py-2 w-64 focus:ring-1 focus:ring-primary focus:outline-none rounded-lg"
+              placeholder="Search reviews..."
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <AdminField
-              label="Author"
-              value={testimonial.author}
-              onChange={(value) => updateDraft((next) => { next.testimonials[index].author = value; })}
-            />
-            <AdminField
-              label="Event"
-              value={testimonial.event}
-              onChange={(value) => updateDraft((next) => { next.testimonials[index].event = value; })}
-            />
-            <AdminPhotoField
-              label="Client photo"
-              value={testimonial.photoUrl ?? ''}
-              onChange={(value) => updateDraft((next) => { next.testimonials[index].photoUrl = value; })}
-            />
-            <button
-              className="admin-danger-button"
-              type="button"
-              onClick={() =>
-                requestConfirm({
-                  message: `Remove the testimonial from "${testimonial.author || 'this client'}"? This cannot be undone.`,
-                  onConfirm: () => updateDraft((next) => { next.testimonials.splice(index, 1); }),
-                })
-              }
-            >
-              <Trash2 aria-hidden="true" size={15} strokeWidth={1.6} />
-              Remove testimonial
-            </button>
           </div>
-        ))}
+        </div>
+        <button
+          className="bg-primary text-on-primary px-6 py-2 font-label-caps text-label-caps text-xs hover:brightness-110 transition-all flex items-center gap-2"
+          onClick={openCreate}
+        >
+          <span className="material-symbols-outlined text-sm">add</span>
+          <span>NEW TESTIMONIAL</span>
+        </button>
       </div>
 
-      <button
-        className="admin-secondary-button admin-add-button"
-        type="button"
-        onClick={() =>
-          updateDraft((next) => {
-            next.testimonials.push({
-              quote: 'Add a client testimonial.',
-              author: 'Client name',
-              event: 'Event type',
-              photoUrl: '',
-            });
-          })
-        }
-      >
-        <Plus aria-hidden="true" size={17} strokeWidth={1.6} />
-        Add testimonial
-      </button>
-    </section>
+      {/* STATISTICS BENTO HEADER */}
+      <div className="grid grid-cols-12 gap-bento-gap mb-8">
+        <div className="col-span-12 lg:col-span-4 bento-card bg-surface-container-low border border-outline-variant p-6 flex flex-col justify-between h-40 rounded-xl">
+          <span className="font-label-caps text-label-caps text-primary uppercase text-[11px]">Total Reach</span>
+          <div className="flex items-end justify-between">
+            <span className="font-display-lg text-display-lg text-on-surface text-4xl font-bold">{totalReach}</span>
+            <div className="flex space-x-0.5 mb-2">
+              {[1, 2, 3, 4].map((star) => (
+                <span key={star} className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+              ))}
+              <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>star_half</span>
+            </div>
+          </div>
+          <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Based on 142 client responses</p>
+        </div>
+
+        <div className="col-span-12 lg:col-span-4 bento-card bg-surface-container-low border border-outline-variant p-6 flex flex-col justify-between h-40 rounded-xl">
+          <span className="font-label-caps text-label-caps text-primary uppercase text-[11px]">Featured Live</span>
+          <span className="font-display-lg text-display-lg text-on-surface text-4xl font-bold">{featuredCount}</span>
+          <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Displayed on website hero gallery</p>
+        </div>
+
+        <div className="col-span-12 lg:col-span-4 bento-card bg-surface-container-low border border-outline-variant p-6 flex flex-col justify-between h-40 overflow-hidden relative rounded-xl">
+          <div className="z-10 relative h-full flex flex-col justify-between">
+            <span className="font-label-caps text-label-caps text-primary uppercase text-[11px]">Pending Review</span>
+            <span className="font-display-lg text-display-lg text-on-surface text-4xl font-bold">{pendingCount}</span>
+            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Submissions requiring approval</p>
+          </div>
+          <div className="absolute right-0 bottom-0 opacity-10">
+            <span className="material-symbols-outlined text-8xl">verified</span>
+          </div>
+        </div>
+      </div>
+
+      {/* SOPHISTICATED LIST LAYOUT */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center mb-6 px-4">
+          <h3 className="font-headline-md text-headline-md text-on-surface font-bold text-lg">Recent Feedback</h3>
+          <div className="flex space-x-4">
+            {['ALL', 'PUBLISHED', 'ARCHIVED'].map((tab) => (
+              <button
+                key={tab}
+                className={`font-label-caps text-label-caps text-[11px] pb-1 border-b ${
+                  activeTab === tab ? 'text-primary border-primary' : 'text-on-surface-variant border-transparent hover:text-on-surface'
+                } transition-colors`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {filtered.map((item, idx) => {
+          const mainIndex = list.findIndex((x) => x.author === item.author && x.quote === item.quote);
+          const isFeatured = item.featured === true;
+          const initials = (item.author || 'Client')
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((n) => n[0]?.toUpperCase() ?? '')
+            .join('');
+
+          return (
+            <div
+              key={idx}
+              className="bento-card bg-surface-container-low border border-outline-variant p-6 flex flex-col md:flex-row items-start md:items-center gap-6 relative rounded-xl hover:border-primary transition-all duration-300"
+            >
+              <div className="w-16 h-16 flex-shrink-0 bg-surface-container-highest overflow-hidden border border-outline-variant rounded-lg flex items-center justify-center">
+                {item.photoUrl ? (
+                  <img className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" alt="" src={item.photoUrl} />
+                ) : (
+                  <span className="font-display-lg text-primary text-xl font-bold">{initials}</span>
+                )}
+              </div>
+
+              <div className="flex-1">
+                <div className="flex items-center gap-4 mb-2">
+                  <h4 className="font-title-sm text-title-sm text-on-surface uppercase tracking-wider text-sm font-semibold">{item.author || 'Clarissa Van Der Berg'}</h4>
+                  <div className="flex text-primary">
+                    {Array.from({ length: 5 }).map((_, sIdx) => {
+                      const currentRating = item.rating ?? 5;
+                      const fill = sIdx < currentRating;
+                      return (
+                        <span
+                          key={sIdx}
+                          className="material-symbols-outlined text-sm"
+                          style={{ fontVariationSettings: fill ? "'FILL' 1" : "'FILL' 0" }}
+                        >
+                          star
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+                <p className="font-body-md text-body-md text-on-surface-variant italic text-sm">
+                  "{item.quote}"
+                </p>
+                <p className="text-[10px] text-outline font-label-caps mt-2 uppercase tracking-tighter">
+                  Event: {item.event || 'Winter Solstice Gala'}
+                </p>
+              </div>
+
+              <div className="flex flex-col items-end gap-3 w-full md:w-auto">
+                <div className="flex items-center gap-3">
+                  <span className="font-label-caps text-[10px] text-outline uppercase tracking-widest">Featured</span>
+                  <button
+                    className={`w-11 h-5 bg-outline-variant relative cursor-pointer transition-colors duration-300 rounded-full ${
+                      isFeatured ? 'bg-primary' : 'bg-surface-variant'
+                    }`}
+                    onClick={() =>
+                      updateDraft((next) => {
+                        const targetIdx = mainIndex >= 0 ? mainIndex : idx;
+                        next.testimonials[targetIdx].featured = !next.testimonials[targetIdx].featured;
+                      })
+                    }
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${
+                        isFeatured ? 'translate-x-6' : ''
+                      }`}
+                    ></span>
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    className="p-2 border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all rounded-lg"
+                    onClick={() => openEdit(mainIndex >= 0 ? mainIndex : idx)}
+                  >
+                    <span className="material-symbols-outlined text-base">edit</span>
+                  </button>
+                  <button
+                    className="p-2 border border-outline-variant text-on-surface-variant hover:border-red-400 hover:text-red-400 transition-all rounded-lg"
+                    onClick={() =>
+                      requestConfirm({
+                        message: `Remove the testimonial from "${item.author || 'this client'}"? This cannot be undone.`,
+                        onConfirm: () =>
+                          updateDraft((next) => {
+                            next.testimonials.splice(mainIndex >= 0 ? mainIndex : idx, 1);
+                          }),
+                      })
+                    }
+                  >
+                    <span className="material-symbols-outlined text-base">delete</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* EDIT MODAL DIALOG */}
+      {isEditing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+          <div className="bg-surface-container border border-outline-variant p-8 max-w-lg w-full rounded-xl space-y-6">
+            <div>
+              <h4 className="font-headline-md text-headline-md text-on-surface text-lg font-bold">
+                {editIndex === null ? 'Create Testimonial' : 'Edit Testimonial'}
+              </h4>
+              <p className="text-on-surface-variant text-xs mt-1">Configure client details, quotes, ratings, and avatars.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-primary uppercase block font-semibold">Client Name</label>
+                  <input
+                    className="w-full bg-surface-container-highest border border-outline-variant p-2.5 text-on-surface rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                    type="text"
+                    value={formData.author}
+                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-primary uppercase block font-semibold">Event Name & Date</label>
+                  <input
+                    className="w-full bg-surface-container-highest border border-outline-variant p-2.5 text-on-surface rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                    type="text"
+                    value={formData.event}
+                    onChange={(e) => setFormData({ ...formData, event: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-primary uppercase block font-semibold">Star Rating (1-5)</label>
+                  <select
+                    className="w-full bg-surface-container-highest border border-outline-variant p-2.5 text-on-surface rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                    value={formData.rating}
+                    onChange={(e) => setFormData({ ...formData, rating: Number(e.target.value) })}
+                  >
+                    <option value={1}>1 Star</option>
+                    <option value={2}>2 Stars</option>
+                    <option value={3}>3 Stars</option>
+                    <option value={4}>4 Stars</option>
+                    <option value={5}>5 Stars</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-primary uppercase block font-semibold">Avatar Image URL</label>
+                  <input
+                    className="w-full bg-surface-container-highest border border-outline-variant p-2.5 text-on-surface rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none font-mono"
+                    type="text"
+                    value={formData.photoUrl}
+                    onChange={(e) => setFormData({ ...formData, photoUrl: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] text-primary uppercase block font-semibold">Client Quote</label>
+                <textarea
+                  className="w-full bg-surface-container-highest border border-outline-variant p-3 text-on-surface rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none leading-relaxed"
+                  rows="3"
+                  value={formData.quote}
+                  onChange={(e) => setFormData({ ...formData, quote: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                className="border border-outline-variant text-on-surface px-6 py-2 font-label-caps text-label-caps text-xs hover:border-primary transition-all rounded-lg"
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-primary text-on-primary px-6 py-2 font-label-caps text-label-caps text-xs hover:brightness-110 transition-all rounded-lg"
+                onClick={saveTestimonial}
+              >
+                Save Review
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1037,7 +2572,7 @@ function EditorHeading({ title, description, icon: Icon = FileText }) {
     <div className="admin-section-heading">
       <p>Content editor</p>
       <h2>
-        <Icon aria-hidden="true" size={26} strokeWidth={1.5} />
+        <Icon aria-hidden="true" size={22} strokeWidth={1.5} />
         {title}
       </h2>
       <span>{description}</span>

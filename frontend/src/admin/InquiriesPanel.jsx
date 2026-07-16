@@ -227,7 +227,7 @@ function InquiriesPanel({ pushToast }) {
                   </div>
 
                   <div className="admin-inquiry-meta admin-inquiry-meta-secondary">
-                    <strong>{inquiry.estimatedGuests ?? '—'}</strong>
+                    <strong>{inquiry.estimatedGuests ?? '-'}</strong>
                     guests
                   </div>
 

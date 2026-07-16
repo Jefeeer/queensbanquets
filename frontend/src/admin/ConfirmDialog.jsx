@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { TriangleAlert } from 'lucide-react';
 
 function ConfirmDialog({ dialog, onCancel }) {
@@ -26,14 +27,20 @@ function ConfirmDialog({ dialog, onCancel }) {
     return null;
   }
 
-  return (
-    <div className="admin-modal-backdrop" role="presentation" onClick={onCancel}>
+  return createPortal(
+    <div 
+      className="admin-modal-backdrop" 
+      role="presentation" 
+      onClick={onCancel}
+      style={{ zIndex: 9999, position: 'fixed', inset: 0 }}
+    >
       <div
         className="admin-modal"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="admin-modal-title"
         onClick={(event) => event.stopPropagation()}
+        style={{ zIndex: 10000 }}
       >
         <div className="admin-modal-icon">
           <TriangleAlert aria-hidden="true" size={22} strokeWidth={1.7} />
@@ -56,7 +63,8 @@ function ConfirmDialog({ dialog, onCancel }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
