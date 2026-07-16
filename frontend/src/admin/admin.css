@@ -1357,8 +1357,9 @@ html.dark .admin-shell {
 
 .admin-toast-stack {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  top: auto;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
   z-index: 80;
   display: grid;
   gap: 0.5rem;
@@ -1371,9 +1372,20 @@ html.dark .admin-shell {
   gap: 0.6rem;
   padding: 0.85rem 0.95rem;
   border-radius: var(--admin-radius);
-  background: var(--admin-ink);
-  color: #f5f3f3;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+}
+
+.admin-toast-success {
+  background: #1f7a45;
+}
+
+.admin-toast-error {
+  background: #b42318;
+}
+
+.admin-toast-info {
+  background: #2563eb;
 }
 
 .admin-toast p {
@@ -1381,21 +1393,33 @@ html.dark .admin-shell {
   margin: 0;
   font-size: 0.88rem;
   line-height: 1.45;
+  color: #fff;
 }
 
 .admin-toast button {
   border: 0;
   background: transparent;
-  color: rgba(245, 243, 243, 0.65);
+  color: rgba(255, 255, 255, 0.82);
   cursor: pointer;
 }
 
+.admin-toast button:hover {
+  color: #fff;
+}
+
 .admin-toast-success svg {
-  color: var(--admin-gold);
+  color: #fff;
+  flex-shrink: 0;
 }
 
 .admin-toast-error svg {
-  color: #ff9b8f;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.admin-toast-info svg {
+  color: #fff;
+  flex-shrink: 0;
 }
 
 .admin-modal-backdrop {
@@ -1405,9 +1429,9 @@ html.dark .admin-shell {
   display: grid;
   place-items: center;
   padding: 1.25rem;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: color-mix(in srgb, #0a0a0a 16%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .admin-modal {
@@ -1422,6 +1446,7 @@ html.dark .admin-shell {
   color: #eae1d4;
   position: relative;
   z-index: 10000;
+  text-align: center;
 }
 
 .admin-modal-icon {

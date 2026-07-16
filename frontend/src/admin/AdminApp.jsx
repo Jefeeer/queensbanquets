@@ -13,6 +13,12 @@ import { isApiEnabled } from '../api/content.js';
 import { useLandingContent } from '../content/LandingContentContext.jsx';
 import AdminPhotoField from './AdminPhotoField.jsx';
 import AdminToastStack from './AdminToast.jsx';
+import {
+  adminToastMessages,
+  getResetToast,
+  getSaveToast,
+  hasUnsavedContentChanges,
+} from './adminNotifications.js';
 import ConfirmDialog from './ConfirmDialog.jsx';
 import InquiriesPanel from './InquiriesPanel.jsx';
 import { formatRelativeDate, getStatusMeta } from './inquiryStatus.js';
@@ -70,9 +76,8 @@ const pageTitles = {
 
 function AdminApp() {
   const { content, setContent, resetContent, syncLocalContentToDatabase, isHydrating } = useLandingContent();
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    () => window.localStorage.getItem(ADMIN_SESSION_KEY) === 'active',
-  );
+  const [authStatus, setAuthStatus] = useState('checking');
+  const isAuthenticated = authStatus === 'authenticated';
   const [activeSection, setActiveSection] = useState('overview');
   const [draft, setDraft] = useState(content);
   const [toasts, setToasts] = useState([]);
@@ -101,7 +106,31 @@ function AdminApp() {
   }
 
   function requestConfirm(dialog) {
-    setConfirmDialog(dialog);
+    setConfirmDialog({
+      ...dialog,
+      onConfirm: () => {
+        const outcome = dialog.onConfirm?.();
+
+        if (!dialog.successMessage) {
+          return outcome;
+        }
+
+        if (outcome instanceof Promise) {
+          return outcome
+            .then((value) => {
+              pushToast('success', dialog.successMessage);
+              return value;
+            })
+            .catch((error) => {
+              pushToast('error', error?.message ?? adminToastMessages.saveError);
+              throw error;
+            });
+        }
+
+        pushToast('success', dialog.successMessage);
+        return outcome;
+      },
+    });
   }
 
   useEffect(() => {
@@ -137,11 +166,11 @@ function AdminApp() {
           return;
         }
 
-        pushToast('success', 'Admin content synced to Supabase landing_content.');
+        pushToast('success', adminToastMessages.syncSuccess);
       } catch (error) {
         localSyncDoneRef.current = false;
         if (!cancelled) {
-          pushToast('error', error.message ?? 'Unable to sync admin content.');
+          pushToast('error', error.message ?? adminToastMessages.saveError);
         }
       }
     }
@@ -166,30 +195,43 @@ function AdminApp() {
   }, []);
 
   useEffect(() => {
-    if (!isApiEnabled()) {
-      return undefined;
-    }
-
-    const token = getStoredAdminToken();
-
-    if (!token) {
-      return undefined;
-    }
-
     let cancelled = false;
 
-    fetchCurrentAdmin(token)
-      .then(() => {
-        if (!cancelled) {
-          window.localStorage.setItem(ADMIN_SESSION_KEY, 'active');
-          setIsAuthenticated(true);
+    async function restoreSession() {
+      if (isApiEnabled()) {
+        const token = getStoredAdminToken();
+
+        if (!token) {
+          window.localStorage.removeItem(ADMIN_SESSION_KEY);
+          if (!cancelled) {
+            setAuthStatus('unauthenticated');
+          }
+          return;
         }
-      })
-      .catch(() => {
-        clearAdminToken();
-        window.localStorage.removeItem(ADMIN_SESSION_KEY);
-        setIsAuthenticated(false);
-      });
+
+        try {
+          await fetchCurrentAdmin(token);
+          if (!cancelled) {
+            window.localStorage.setItem(ADMIN_SESSION_KEY, 'active');
+            setAuthStatus('authenticated');
+          }
+        } catch {
+          clearAdminToken();
+          window.localStorage.removeItem(ADMIN_SESSION_KEY);
+          if (!cancelled) {
+            setAuthStatus('unauthenticated');
+          }
+        }
+        return;
+      }
+
+      const hasOfflineSession = window.localStorage.getItem(ADMIN_SESSION_KEY) === 'active';
+      if (!cancelled) {
+        setAuthStatus(hasOfflineSession ? 'authenticated' : 'unauthenticated');
+      }
+    }
+
+    restoreSession();
 
     return () => {
       cancelled = true;
@@ -242,7 +284,7 @@ function AdminApp() {
     }
     authTimerRef.current = window.setTimeout(() => {
       window.localStorage.setItem(ADMIN_SESSION_KEY, 'active');
-      setIsAuthenticated(true);
+      setAuthStatus('authenticated');
       setActiveSection('overview');
       setAuthLoading(false);
     }, AUTH_LOAD_MS);
@@ -263,9 +305,10 @@ function AdminApp() {
         authTimerRef.current = window.setTimeout(() => {
           window.localStorage.removeItem(ADMIN_SESSION_KEY);
           clearAdminToken();
-          setIsAuthenticated(false);
+          setAuthStatus('unauthenticated');
           setSidebarOpen(false);
           setAuthLoading(false);
+          pushToast('success', adminToastMessages.signedOut);
         }, AUTH_LOAD_MS);
       },
     });
@@ -280,36 +323,26 @@ function AdminApp() {
   }
 
   async function saveChanges() {
+    if (!hasUnsavedContentChanges(content, draft)) {
+      pushToast('info', adminToastMessages.alreadyUpToDate);
+      return;
+    }
+
     setIsSaving(true);
 
     try {
       const result = await setContent(draft);
       const apiOn = isApiEnabled();
       const hasToken = Boolean(getStoredAdminToken());
+      const toast = getSaveToast({
+        apiOn,
+        hasToken,
+        savedLocally: result?.savedLocally,
+      });
 
-      if (apiOn && hasToken && !result?.savedLocally) {
-        pushToast(
-          'success',
-          'Saved to the database. Open landing pages update automatically while npm run dev is running.',
-        );
-      } else if (apiOn && !hasToken) {
-        pushToast(
-          'error',
-          'Saved locally only. Sign out and sign in again so the admin can connect to Supabase.',
-        );
-      } else if (!apiOn) {
-        pushToast(
-          'error',
-          'Saved locally only. Set VITE_API_BASE_URL and restart npm run dev.',
-        );
-      } else {
-        pushToast(
-          'success',
-          'Saved locally. Open landing pages update automatically while npm run dev is running.',
-        );
-      }
+      pushToast(toast.type, toast.message);
     } catch (error) {
-      pushToast('error', error.message ?? 'Unable to save changes right now.');
+      pushToast('error', error.message ?? adminToastMessages.saveError);
     } finally {
       setIsSaving(false);
     }
@@ -327,12 +360,13 @@ function AdminApp() {
           setDraft(defaultContent);
           pushToast(
             'success',
-            isApiEnabled() && getStoredAdminToken()
-              ? 'Content was reset in the database and on open landing pages.'
-              : 'Local content was reset and open landing pages updated automatically.',
+            getResetToast({
+              apiOn: isApiEnabled(),
+              hasToken: Boolean(getStoredAdminToken()),
+            }),
           );
         } catch (error) {
-          pushToast('error', error.message ?? 'Unable to reset content right now.');
+          pushToast('error', error.message ?? adminToastMessages.saveError);
         }
       },
     });
@@ -342,16 +376,16 @@ function AdminApp() {
     return (
       <>
         <PageLoader
-          visible={bootLoading || authLoading || isHydrating}
+          visible={bootLoading || authLoading || isHydrating || authStatus === 'checking'}
           label={
             authLoading
               ? authLoadingLabel
-              : isHydrating
+              : authStatus === 'checking' || isHydrating
                 ? 'Loading workspace'
                 : 'Opening admin portal'
           }
         />
-        {!bootLoading && !authLoading ? (
+        {!bootLoading && !authLoading && authStatus !== 'checking' ? (
           <AdminLogin onLoginSuccess={handleLoginSuccess} brand={content.brand} />
         ) : null}
       </>
@@ -484,7 +518,7 @@ function AdminApp() {
         {/* Sidebar Backdrop for Mobile Drawer */}
         {sidebarOpen ? (
           <button
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+            className="qb-overlay-blur z-40 md:hidden"
             type="button"
             aria-label="Close admin menu"
             onClick={() => setSidebarOpen(false)}
@@ -608,7 +642,12 @@ function AdminApp() {
                 <PackagesEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
               ) : null}
               {activeSection === 'testimonials' ? (
-                <TestimonialsEditor draft={draft} updateDraft={updateDraft} requestConfirm={requestConfirm} />
+                <TestimonialsEditor
+                  draft={draft}
+                  updateDraft={updateDraft}
+                  requestConfirm={requestConfirm}
+                  pushToast={pushToast}
+                />
               ) : null}
             </div>
           </main>
@@ -1122,6 +1161,11 @@ function BrandHeroEditor({ draft, updateDraft, pushToast }) {
     setPasswordMessage('');
     setPasswordError('');
 
+    if (!currentPassword && !newPassword && !confirmPassword) {
+      pushToast?.('info', adminToastMessages.passwordUnchanged);
+      return;
+    }
+
     if (!currentPassword) {
       setPasswordError('Enter your current password.');
       return;
@@ -1158,7 +1202,7 @@ function BrandHeroEditor({ draft, updateDraft, pushToast }) {
       setNewPassword('');
       setConfirmPassword('');
       setPasswordMessage(result.message || 'Password updated successfully.');
-      pushToast?.('success', 'Password updated successfully.');
+      pushToast?.('success', adminToastMessages.passwordUpdated);
     } catch (error) {
       const message = error.message ?? 'Unable to update password.';
       setPasswordError(message);
@@ -1685,6 +1729,7 @@ function ExperienceEditor({ draft, updateDraft, requestConfirm }) {
                           requestConfirm({
                             message: `Remove this core value point? This cannot be undone.`,
                             confirmLabel: 'Remove',
+                            successMessage: adminToastMessages.removeDraft,
                             onConfirm: () =>
                               updateDraft((next) => {
                                 next.experiencePoints.splice(index, 1);
@@ -1744,8 +1789,8 @@ function ExperienceEditor({ draft, updateDraft, requestConfirm }) {
 
       {/* INLINE IMAGE EDIT MODAL */}
       {editingImageIdx !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-          <div className="bg-surface-container border border-outline-variant p-5 sm:p-6 lg:p-8 max-w-lg w-full rounded-xl">
+        <div className="qb-modal-backdrop qb-modal-backdrop--sheet z-50">
+          <div className="qb-modal-panel max-w-lg w-full space-y-0">
             <h4 className="font-headline-md text-headline-md text-on-surface text-lg font-bold mb-2">Edit Image URL</h4>
             <p className="text-on-surface-variant text-xs mb-6">Enter a public image URL to update this brand photography slot.</p>
             <input
@@ -1890,6 +1935,7 @@ function ContactEditor({ draft, updateDraft, requestConfirm }) {
                         requestConfirm({
                           message: `Remove the "${channel.label || 'contact'}" channel? This cannot be undone.`,
                           confirmLabel: 'Remove',
+                          successMessage: adminToastMessages.removeDraft,
                           onConfirm: () =>
                             updateDraft((next) => {
                               next.contactChannels.splice(index, 1);
@@ -2170,6 +2216,7 @@ function ServicesEditor({ draft, updateDraft, requestConfirm }) {
                     requestConfirm({
                       message: `Remove "${item.title || 'service'}" card? This cannot be undone.`,
                       confirmLabel: 'Remove',
+                      successMessage: adminToastMessages.removeDraft,
                       onConfirm: () =>
                         updateDraft((next) => {
                           next.services.splice(index, 1);
@@ -2187,8 +2234,8 @@ function ServicesEditor({ draft, updateDraft, requestConfirm }) {
 
       {/* INLINE IMAGE EDIT MODAL */}
       {editingImageIdx !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-          <div className="bg-surface-container border border-outline-variant p-5 sm:p-6 lg:p-8 max-w-lg w-full rounded-xl">
+        <div className="qb-modal-backdrop qb-modal-backdrop--sheet z-50">
+          <div className="qb-modal-panel max-w-lg w-full space-y-0">
             <h4 className="font-headline-md text-headline-md text-on-surface text-lg font-bold mb-2">Edit Image URL</h4>
             <p className="text-on-surface-variant text-xs mb-6">Enter a public image URL to update this service catalog card.</p>
             <input
@@ -2308,6 +2355,7 @@ function PackagesEditor({ draft, updateDraft, requestConfirm }) {
                       requestConfirm({
                         message: `Remove the "${item.name || 'package'}" package tier? This cannot be undone.`,
                         confirmLabel: 'Remove',
+                        successMessage: adminToastMessages.removeDraft,
                         onConfirm: () =>
                           updateDraft((next) => {
                             next.packages.splice(index, 1);
@@ -2479,7 +2527,7 @@ function PackagesEditor({ draft, updateDraft, requestConfirm }) {
   );
 }
 
-function TestimonialsEditor({ draft, updateDraft, requestConfirm }) {
+function TestimonialsEditor({ draft, updateDraft, requestConfirm, pushToast }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('ALL');
   
@@ -2539,6 +2587,23 @@ function TestimonialsEditor({ draft, updateDraft, requestConfirm }) {
   }
 
   function saveTestimonial() {
+    if (editIndex !== null) {
+      const existing = list[editIndex];
+      const unchanged =
+        (existing.author || '') === (formData.author || '')
+        && (existing.quote || '') === (formData.quote || '')
+        && (existing.event || '') === (formData.event || '')
+        && (existing.rating ?? 5) === (formData.rating ?? 5)
+        && (existing.photoUrl || '') === (formData.photoUrl || '')
+        && Boolean(existing.featured) === Boolean(formData.featured);
+
+      if (unchanged) {
+        pushToast?.('info', adminToastMessages.testimonialUpToDate);
+        setIsEditing(false);
+        return;
+      }
+    }
+
     updateDraft((next) => {
       next.testimonials ??= [];
       if (editIndex === null) {
@@ -2548,6 +2613,7 @@ function TestimonialsEditor({ draft, updateDraft, requestConfirm }) {
       }
     });
     setIsEditing(false);
+    pushToast?.('success', adminToastMessages.testimonialSaved);
   }
 
   // Count statistics
@@ -2717,6 +2783,7 @@ function TestimonialsEditor({ draft, updateDraft, requestConfirm }) {
                       requestConfirm({
                         message: `Remove the testimonial from "${item.author || 'this client'}"? This cannot be undone.`,
                         confirmLabel: 'Remove',
+                        successMessage: adminToastMessages.removeDraft,
                         onConfirm: () =>
                           updateDraft((next) => {
                             next.testimonials.splice(mainIndex >= 0 ? mainIndex : idx, 1);
@@ -2735,8 +2802,8 @@ function TestimonialsEditor({ draft, updateDraft, requestConfirm }) {
 
       {/* EDIT MODAL DIALOG */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-          <div className="bg-surface-container border border-outline-variant p-5 sm:p-6 lg:p-8 max-w-lg w-full rounded-xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className="qb-modal-backdrop qb-modal-backdrop--sheet z-50">
+          <div className="qb-modal-panel max-w-lg w-full space-y-6">
             <div>
               <h4 className="font-headline-md text-headline-md text-on-surface text-lg font-bold">
                 {editIndex === null ? 'Create Testimonial' : 'Edit Testimonial'}
@@ -2919,6 +2986,7 @@ function EditableCards({
                 requestConfirm({
                   message: `Remove this ${itemLabel}? This cannot be undone.`,
                   confirmLabel: 'Remove',
+                  successMessage: adminToastMessages.removeDraft,
                   onConfirm: () => updateDraft((next) => { next[path].splice(index, 1); }),
                 })
               }

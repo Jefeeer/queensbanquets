@@ -1,4 +1,4 @@
-import { CheckCircle2, TriangleAlert, X } from 'lucide-react';
+import { CheckCircle2, Info, TriangleAlert, X } from 'lucide-react';
 
 function AdminToastStack({ toasts, onDismiss }) {
   if (!toasts.length) {
@@ -8,7 +8,12 @@ function AdminToastStack({ toasts, onDismiss }) {
   return (
     <div className="admin-toast-stack" role="status" aria-live="polite">
       {toasts.map((toast) => {
-        const Icon = toast.type === 'error' ? TriangleAlert : CheckCircle2;
+        const Icon =
+          toast.type === 'error'
+            ? TriangleAlert
+            : toast.type === 'info'
+              ? Info
+              : CheckCircle2;
 
         return (
           <div className={`admin-toast admin-toast-${toast.type}`} key={toast.id}>

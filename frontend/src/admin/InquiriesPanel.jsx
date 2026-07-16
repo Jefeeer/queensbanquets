@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Inbox, Mail, Phone, Search } from 'lucide-react';
 import { fetchAdminInquiries, getStoredAdminToken, updateAdminInquiryStatus } from '../api/admin.js';
+import { adminToastMessages } from './adminNotifications.js';
 import { isApiEnabled } from '../api/content.js';
 import { INQUIRY_STATUSES, formatRelativeDate, getStatusMeta } from './inquiryStatus.js';
 
@@ -114,7 +115,7 @@ function InquiriesPanel({ pushToast }) {
       setInquiries((current) =>
         current.map((item) => (item.id === inquiry.id ? { ...item, status: previousStatus } : item)),
       );
-      pushToast?.('error', error.message ?? 'Unable to update inquiry status.');
+      pushToast?.('error', error.message ?? adminToastMessages.saveError);
     }
   }
 
