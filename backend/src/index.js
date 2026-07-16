@@ -15,4 +15,5 @@ export {
   listEventInquiries,
   normalizeInquiry,
   updateEventInquiryStatus,
+  getEventInquiryAnalytics,
 } from './services/eventInquiryService.js';

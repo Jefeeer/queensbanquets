@@ -1,4 +1,4 @@
-import { getPool, listEventInquiries, updateEventInquiryStatus } from '@queens-banquet/backend';
+import { getPool, listEventInquiries, updateEventInquiryStatus, getEventInquiryAnalytics } from '@queens-banquet/backend';
 import { inquiryStatusSchema } from '../schemas/admin.schema.js';
 
 export async function listInquiries(_request, response) {
@@ -35,5 +35,16 @@ export async function updateInquiryStatus(request, response) {
   } catch (error) {
     console.error('Unable to update inquiry status:', error.message);
     return response.status(503).json({ message: 'Unable to update inquiry status right now.' });
+  }
+}
+export async function getAnalytics(_request, response) {
+  try {
+    const pool = getPool();
+    const analytics = await getEventInquiryAnalytics(pool);
+
+    return response.json({ analytics });
+  } catch (error) {
+    console.error('Unable to fetch analytics:', error.message);
+    return response.status(503).json({ message: 'Unable to load analytics right now.' });
   }
 }

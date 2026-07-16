@@ -1,18 +1,10 @@
 import { useEffect, useState } from 'react';
-import { CalendarCheck, CalendarDays, Gift, Menu, MessageCircleHeart, Sparkles, SquareCheckBig, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useLandingContent } from '../content/LandingContentContext.jsx';
-
-const navIcons = {
-  '#experience': Sparkles,
-  '#services': SquareCheckBig,
-  '#testimonials': MessageCircleHeart,
-  '#packages': Gift,
-  '#contact': CalendarCheck,
-};
 
 function Header() {
   const {
-    content: { brand, navigationItems },
+    content: { navigationItems },
   } = useLandingContent();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -40,7 +32,7 @@ function Header() {
 
   useEffect(() => {
     function handleScroll() {
-      setIsScrolled(window.scrollY > 24);
+      setIsScrolled(window.scrollY > 50);
     }
 
     handleScroll();
@@ -83,67 +75,121 @@ function Header() {
   return (
     <>
       <header
-        className={`site-header${menuOpen ? ' site-header-menu-open' : ''}${isScrolled ? ' is-scrolled' : ''}`}
+        className={`w-full top-0 sticky z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 transition-all duration-300 ${
+          isScrolled ? 'shadow-xl bg-surface/95' : 'shadow-sm'
+        }`}
       >
-        <a className="brand" href="#top" aria-label="Queen's Banquet Events home" onClick={closeMenu}>
-          <img className="brand-logo" src={brand.logo} alt="" />
-          <span>
-            Queen's
-            <strong>Banquet Events</strong>
-          </span>
-        </a>
-
-        <button
-          className="site-menu-toggle"
-          type="button"
-          aria-expanded={menuOpen}
-          aria-controls="site-menu"
-          aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          onClick={() => setMenuOpen((current) => !current)}
+        <div
+          className={`max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex items-center justify-between transition-all duration-300 ${
+            isScrolled ? 'h-20' : 'h-24'
+          }`}
         >
-          {menuOpen ? (
-            <X aria-hidden="true" size={20} strokeWidth={1.7} />
-          ) : (
-            <Menu aria-hidden="true" size={20} strokeWidth={1.7} />
-          )}
-        </button>
+          <a
+            className="font-headline-md text-headline-md text-primary italic cursor-pointer active:scale-95 transition-all"
+            href="#top"
+            onClick={closeMenu}
+          >
+            Queen's Banquet Events
+          </a>
 
-        <nav className={`site-nav${menuOpen ? ' is-open' : ''}`} id="site-menu" aria-label="Primary navigation">
-          <span className="site-nav-label">Menu</span>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-10">
+            {navigationItems.map((item) => {
+              const isActive = activeHref === item.href || (item.href === '#top' && activeHref === '#home');
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className={`font-label-md text-label-md uppercase tracking-widest pb-1 transition-all duration-300 ${
+                    isActive
+                      ? 'text-primary border-b-2 border-primary'
+                      : 'text-on-surface-variant hover:text-primary border-b-2 border-transparent'
+                  }`}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-4">
+            <a
+              href="#contact"
+              className="hidden lg:block px-6 py-2 border border-primary text-primary font-label-md uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all duration-300 active:scale-95"
+            >
+              Request Meeting
+            </a>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden text-on-surface hover:text-primary transition-colors p-2"
+              type="button"
+              aria-expanded={menuOpen}
+              aria-controls="site-menu"
+              aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              onClick={() => setMenuOpen((current) => !current)}
+            >
+              {menuOpen ? (
+                <X aria-hidden="true" size={24} strokeWidth={1.5} />
+              ) : (
+                <Menu aria-hidden="true" size={24} strokeWidth={1.5} />
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Slide-over Menu */}
+      <div
+        className={`fixed inset-y-0 right-0 w-64 bg-surface z-50 flex flex-col p-6 gap-6 transform transition-transform duration-300 ease-in-out md:hidden border-l border-outline-variant/20 ${
+          menuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+        id="site-menu"
+      >
+        <div className="flex justify-between items-center pb-4 border-b border-outline-variant/10">
+          <span className="font-headline-md text-primary italic">Menu</span>
+          <button
+            onClick={closeMenu}
+            aria-label="Close navigation menu"
+            className="p-1 text-on-surface-variant hover:text-primary"
+          >
+            <X size={24} strokeWidth={1.5} />
+          </button>
+        </div>
+        <nav className="flex flex-col gap-6" aria-label="Mobile navigation">
           {navigationItems.map((item) => {
-            const Icon = navIcons[item.href];
-
+            const isActive = activeHref === item.href || (item.href === '#top' && activeHref === '#home');
             return (
               <a
                 key={item.href}
                 href={item.href}
-                className={activeHref === item.href ? 'is-active' : ''}
+                className={`font-label-md text-label-md uppercase tracking-widest py-2 transition-all ${
+                  isActive ? 'text-primary font-semibold' : 'text-on-surface-variant hover:text-primary'
+                }`}
                 onClick={closeMenu}
               >
-                {Icon ? (
-                  <span className="nav-link-icon">
-                    <Icon aria-hidden="true" size={18} strokeWidth={1.7} />
-                  </span>
-                ) : null}
                 {item.label}
               </a>
             );
           })}
-          <a className="nav-cta" href="#contact" onClick={closeMenu}>
-            <CalendarDays aria-hidden="true" size={18} strokeWidth={1.7} />
-            Reserve a Date
+          <a
+            href="#contact"
+            className="mt-4 w-full py-3 text-center border border-primary text-primary font-label-md uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all active:scale-95"
+            onClick={closeMenu}
+          >
+            Request Meeting
           </a>
         </nav>
-      </header>
+      </div>
 
-      {menuOpen ? (
-        <button
-          className="site-menu-backdrop"
-          type="button"
-          aria-label="Close navigation menu"
+      {/* Mobile Backdrop */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
           onClick={closeMenu}
+          aria-hidden="true"
         />
-      ) : null}
+      )}
     </>
   );
 }

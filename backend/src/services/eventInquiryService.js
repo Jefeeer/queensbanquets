@@ -43,3 +43,15 @@ export async function updateEventInquiryStatus(pool, id, status) {
 
   return inquiryRepository.updateInquiryStatus(pool, id, status);
 }
+
+export async function getEventInquiryAnalytics(pool) {
+  if (!pool) {
+    return {
+      total: 0,
+      byStatus: {},
+      byNeed: {},
+    };
+  }
+
+  return inquiryRepository.getAnalytics(pool);
+}

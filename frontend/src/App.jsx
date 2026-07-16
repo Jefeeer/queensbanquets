@@ -2,7 +2,6 @@ import Header from './components/Header.jsx';
 import Hero from './components/Hero.jsx';
 import Experience from './components/Experience.jsx';
 import Services from './components/Services.jsx';
-import Gallery from './components/Gallery.jsx';
 import Packages from './components/Packages.jsx';
 import Testimonials from './components/Testimonials.jsx';
 import Contact from './components/Contact.jsx';
@@ -21,9 +20,8 @@ function App() {
       <main>
         <Experience />
         <Services />
-        <Gallery />
-        <Testimonials />
         <Packages />
+        <Testimonials />
         <Contact />
       </main>
       <Footer />

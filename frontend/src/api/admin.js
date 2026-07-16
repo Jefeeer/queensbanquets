@@ -91,3 +91,20 @@ export async function updateAdminInquiryStatus(id, status, token) {
   const data = await response.json();
   return data.inquiry;
 }
+
+export async function fetchAdminAnalytics(token) {
+  if (!API_BASE_URL || !token) {
+    return null;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/admin/analytics`, {
+    headers: buildHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error('Unable to load analytics.');
+  }
+
+  const data = await response.json();
+  return data.analytics ?? null;
+}

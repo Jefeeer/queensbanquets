@@ -1,106 +1,48 @@
-import { useEffect, useRef } from 'react';
-import { CalendarCheck, HeartHandshake, MessageCircle } from 'lucide-react';
 import { useLandingContent } from '../content/LandingContentContext.jsx';
 
 function Hero() {
   const {
-    content: { brand, heroContent, highlights },
+    content: { heroContent },
   } = useLandingContent();
 
-  const heroRef = useRef(null);
-  const archLargeRef = useRef(null);
-  const archSmallRef = useRef(null);
-  const tableRef = useRef(null);
-  const logoRef = useRef(null);
-
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return undefined;
-    }
-
-    let frameId = null;
-
-    function applyParallax() {
-      frameId = null;
-      const section = heroRef.current;
-      if (!section) {
-        return;
-      }
-
-      const rect = section.getBoundingClientRect();
-      const progress = Math.min(Math.max(-rect.top / (rect.height || 1), 0), 1);
-
-      if (archLargeRef.current) {
-        archLargeRef.current.style.transform = `translateY(${progress * 46}px)`;
-      }
-      if (archSmallRef.current) {
-        archSmallRef.current.style.transform = `translateY(${progress * -34}px)`;
-      }
-      if (tableRef.current) {
-        tableRef.current.style.transform = `translateY(${progress * 58}px)`;
-      }
-      if (logoRef.current) {
-        logoRef.current.style.transform = `translateX(-50%) translateY(${progress * -20}px)`;
-      }
-    }
-
-    function handleScroll() {
-      if (frameId === null) {
-        frameId = window.requestAnimationFrame(applyParallax);
-      }
-    }
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll);
-
-    return () => {
-      if (frameId !== null) {
-        window.cancelAnimationFrame(frameId);
-      }
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
-    };
-  }, []);
+  const backgroundUrl =
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuD4DLyVU1YrR8CRaASVouRz53kdS6pExr0eljjXk1aW3hOO2jCoX4LZMq51ubBn1WQRgelhqvBQzxHxSeabz42cTi7IRSu6Xwz6npILel4YKn4N7naLo6HrKLE8jRBJT54AXsb9RYgCMc2eGH5cKMNPawSbjkcFpwtGzp4gMJPkQQXC_BmUcnjFXhJONoASmvBXIYfnUU01CTtJWTUIDuphaqpdoCOQz39iXeK3RG2hFxr5bEQR0hGqg5--YzdMsj5vuyPRqkFGUN8';
 
   return (
-    <section className="hero" ref={heroRef}>
-      <div className="hero-content">
-        <p className="eyebrow">{heroContent.eyebrow}</p>
-        <h1>{heroContent.title}</h1>
-        <p className="hero-copy">{heroContent.copy}</p>
-        <p className="owner-line">Owned and managed by {brand.owner}</p>
-
-        <div className="hero-actions">
-          <a className="button button-primary" href="#contact">
-            <CalendarCheck aria-hidden="true" size={19} strokeWidth={1.7} />
+    <section className="relative h-[90vh] w-full flex items-center justify-center overflow-hidden" id="home">
+      <div className="absolute inset-0 z-0">
+        <div
+          className="w-full h-full bg-cover bg-center transition-transform duration-10000 hover:scale-105"
+          style={{ backgroundImage: `url('${backgroundUrl}')` }}
+          role="img"
+          aria-label="A cinematic, wide-angle shot of a grand ballroom gala"
+        />
+        <div className="absolute inset-0 bg-black/30 backdrop-brightness-75" />
+      </div>
+      <div className="relative z-10 text-center text-on-primary max-w-4xl px-margin-mobile">
+        <span className="font-label-md text-label-md uppercase tracking-[0.3em] mb-6 block opacity-90">
+          {heroContent.eyebrow}
+        </span>
+        <h1 className="font-display-lg text-display-lg-mobile md:text-display-lg mb-8 leading-tight">
+          Where Heritage Meets <br />
+          <span className="italic font-normal">Timeless Splendor</span>
+        </h1>
+        <p className="font-body-lg text-body-lg mb-10 max-w-2xl mx-auto opacity-80">
+          {heroContent.copy}
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+          <a
+            className="px-10 py-4 bg-primary-container text-on-primary-container font-label-md uppercase tracking-widest hover:scale-105 transition-all duration-300"
+            href="#services"
+          >
             {heroContent.primaryCta}
           </a>
-          <a className="button button-secondary" href="#testimonials">
-            <MessageCircle aria-hidden="true" size={19} strokeWidth={1.7} />
+          <a
+            className="px-10 py-4 backdrop-blur-md bg-white/10 border border-white/40 text-white font-label-md uppercase tracking-widest hover:bg-white hover:text-on-surface transition-all duration-300"
+            href="#contact"
+          >
             {heroContent.secondaryCta}
           </a>
-        </div>
-
-        <dl className="hero-highlights" aria-label="Coordination highlights">
-          {highlights.map((item, index) => (
-            <div key={item.label} style={{ '--pop-delay': `${520 + index * 140}ms` }}>
-              <HeartHandshake aria-hidden="true" size={22} strokeWidth={1.6} />
-              <dt>{item.value}</dt>
-              <dd>{item.label}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-
-      <div className="hero-card" aria-label="Queen's Banquet Events brand presentation">
-        <img className="hero-logo" ref={logoRef} src={brand.logo} alt="Queen's Banquet Events" />
-        <div className="arch arch-large" ref={archLargeRef} />
-        <div className="arch arch-small" ref={archSmallRef} />
-        <div className="table-setting" ref={tableRef}>
-          <span />
-          <span />
-          <span />
         </div>
       </div>
     </section>

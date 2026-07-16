@@ -95,8 +95,33 @@ export async function updateInquiryStatus(pool, id, status) {
   return result.rows[0] ?? null;
 }
 
+export async function getAnalytics(pool) {
+  const [totalRes, statusRes, needRes] = await Promise.all([
+    pool.query(`SELECT COUNT(*) as count FROM event_inquiries`),
+    pool.query(`SELECT status, COUNT(*) as count FROM event_inquiries GROUP BY status`),
+    pool.query(`SELECT COALESCE(coordination_need, 'Unspecified') as need, COUNT(*) as count FROM event_inquiries GROUP BY coordination_need`),
+  ]);
+
+  const statusCounts = {};
+  for (const row of statusRes.rows) {
+    statusCounts[row.status] = parseInt(row.count, 10);
+  }
+
+  const needCounts = {};
+  for (const row of needRes.rows) {
+    needCounts[row.need] = parseInt(row.count, 10);
+  }
+
+  return {
+    total: parseInt(totalRes.rows[0].count, 10),
+    byStatus: statusCounts,
+    byNeed: needCounts,
+  };
+}
+
 export const inquiryRepository = {
   saveInquiry,
   listInquiries,
   updateInquiryStatus,
+  getAnalytics,
 };

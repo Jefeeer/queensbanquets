@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getCurrentAdmin, loginAdmin } from '../controllers/adminAuth.controller.js';
 import { resetContent, updateContent } from '../controllers/adminContent.controller.js';
-import { listInquiries, updateInquiryStatus } from '../controllers/adminInquiries.controller.js';
+import { listInquiries, updateInquiryStatus, getAnalytics } from '../controllers/adminInquiries.controller.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 
 const router = Router();
@@ -12,5 +12,6 @@ router.put('/content', requireAdmin, updateContent);
 router.post('/content/reset', requireAdmin, resetContent);
 router.get('/inquiries', requireAdmin, listInquiries);
 router.patch('/inquiries/:id/status', requireAdmin, updateInquiryStatus);
+router.get('/analytics', requireAdmin, getAnalytics);
 
 export default router;

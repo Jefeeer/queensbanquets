@@ -1,120 +1,125 @@
 export const navigationItems = [
-  { label: "Marou's Experience", href: '#experience' },
-  { label: 'Coordination', href: '#services' },
-  { label: 'Testimonials', href: '#testimonials' },
-  { label: 'Packages', href: '#packages' },
-  { label: 'Book a Meeting', href: '#contact' },
+  { label: 'HOME', href: '#top' },
+  { label: 'SERVICES', href: '#services' },
+  { label: 'PACKAGES', href: '#packages' },
+  { label: 'ABOUT US', href: '#about' },
+  { label: 'CONTACT', href: '#contact' },
 ];
 
 export const brand = {
-  name: "Queen's Banquet Events",
+  name: "QUEEN'S BANQUET EVENTS",
   owner: 'Marou Madrid',
   logo: '/queens-banquet-logo.svg',
 };
 
 export const heroContent = {
-  eyebrow: "Queen's Banquet Events",
-  title: 'Wedding coordination for calm, graceful celebrations.',
-  copy:
-    "Queen's Banquet Events is a coordination service led by Marou Madrid, helping couples organize timelines, suppliers, family cues, and program flow so the wedding day feels elegant, personal, and well-managed.",
-  primaryCta: 'Book a Meeting',
-  secondaryCta: 'Read Testimonials',
+  eyebrow: 'CURATORS OF THE EXTRAORDINARY',
+  title: 'Where Heritage Meets Timeless Splendor',
+  copy: 'Crafting bespoke experiences for the world\'s most discerning hosts. From royal weddings to elite corporate galas.',
+  primaryCta: 'DISCOVER THE SERVICES',
+  secondaryCta: 'REQUEST ACCESS',
 };
 
 export const highlights = [
-  { value: '1:1', label: 'Hands-on guidance from Marou' },
-  { value: 'Calm', label: 'Program and supplier coordination' },
-  { value: 'Booked', label: 'Meeting schedules for couples' },
+  { value: '320+', label: 'Royal Events' },
+  { value: '15', label: 'Global Awards' },
+  { value: '100%', label: 'Exclusivity' },
 ];
 
 export const services = [
   {
-    title: 'Wedding Coordination',
-    description:
-      'Marou helps align your ceremony flow, reception program, suppliers, and family cues so the day feels organized and graceful.',
+    title: 'Wedding Planning',
+    description: 'Transforming visions into matrimonial masterpieces with a dedicated concierge for every detail.',
+    type: 'wedding-planning',
+    image: '/queens-banquet-logo.svg' // Placeholder or we'll render custom graphics
   },
   {
-    title: 'On-the-Day Coordination',
-    description:
-      'A focused event-day service for couples who have planned the details and need a steady coordinator to manage timing and movement.',
+    title: 'Event Design',
+    description: 'Bespoke event themes, custom centerpieces, ambient styling, and elegant decor orchestration.',
+    type: 'event-design',
+    image: '/queens-banquet-logo.svg'
   },
   {
-    title: 'Meeting and Supplier Alignment',
-    description:
-      'Schedule planning meetings, review supplier responsibilities, and prepare the wedding timeline before the celebration begins.',
+    title: 'Banquet Logistics',
+    description: 'Flawless seating management, artisanal menu synchronization, and white-glove server coordination.',
+    type: 'banquet-logistics',
+    image: '/queens-banquet-logo.svg'
+  },
+  {
+    title: 'Luxury Venues',
+    description: 'Meticulous venue scouting, private estate buyouts, and historical castle event logistics.',
+    type: 'luxury-venues',
+    image: '/queens-banquet-logo.svg'
   },
 ];
 
-export const galleryMoments = [
-  'Program Flow',
-  'Supplier Briefing',
-  'Ceremony Cues',
-  'Family Guidance',
-];
+
 
 export const packages = [
   {
-    name: 'Ivory Guidance',
-    price: 'Consultation',
-    features: ['Initial planning meeting', 'Coordination checklist', 'Program review'],
+    name: 'THE SOVEREIGN',
+    price: 'Refined Intimacy',
+    features: [
+      { text: 'Up to 100 distinguished guests', included: true },
+      { text: 'Artisanal menu curation by Chef de Cuisine', included: true },
+      { text: 'Floral styling & ambient lighting design', included: true },
+      { text: '24/7 Personal Concierge', included: false },
+    ],
   },
   {
-    name: 'Golden Coordination',
-    price: 'Signature',
-    features: ['Supplier alignment', 'Wedding timeline', 'On-the-day coordination'],
+    name: 'THE HEIRLOOM',
+    price: 'Grand Tradition',
+    features: [
+      { text: 'Up to 300 distinguished guests', included: true },
+      { text: 'Premium wine & spirit sommelier pairing', included: true },
+      { text: 'Live orchestral or ensemble coordination', included: true },
+      { text: 'Dedicated event manager for duration', included: true },
+    ],
     featured: true,
   },
   {
-    name: 'Royal Full Coordination',
-    price: 'Complete',
-    features: ['Planning meetings', 'Family and entourage cues', 'Reception program flow'],
+    name: 'ROYAL SIGNATURE',
+    price: 'Infinite Horizon',
+    features: [
+      { text: 'Unlimited guest capacity', included: true },
+      { text: 'Global venue scouting & buyout assistance', included: true },
+      { text: 'Custom theatrical production & decor', included: true },
+      { text: '24/7 Elite white-glove concierge', included: true },
+    ],
   },
 ];
 
 export const experienceContent = {
-  panelQuote: 'Marou Madrid coordinates the flow behind your most important moments.',
-  photoUrl: '',
+  panelQuote: 'Discretion, grandeur, and silent execution behind the most prestigious celebrations.',
+  photoUrl: '/queens-banquet-logo.svg', // Will render waxes seal image
 };
 
 export const experiencePoints = [
   {
-    title: 'Experienced coordinator',
-    description:
-      'Marou Madrid guides couples through the details that affect the real wedding-day flow: timing, suppliers, family movement, and program cues.',
+    title: 'OUR HERITAGE',
+    description: 'Founded on the principles of discretion and grandeur, Queen\'s Banquet Events has been the silent architect behind the most prestigious celebrations for over three decades.'
   },
   {
-    title: 'Calm event leadership',
-    description:
-      'The coordination approach is steady and respectful, keeping the couple, entourage, suppliers, and guests aligned throughout the celebration.',
-  },
-  {
-    title: 'Prepared before the date',
-    description:
-      'Meetings and checklists are used before the event so expectations are clear before the ceremony and reception begin.',
-  },
+    title: 'OUR PHILOSOPHY',
+    description: 'Our philosophy is simple: we believe that every event is a living tapestry, woven from the threads of heritage, contemporary design, and unparalleled hospitality. We don\'t just plan events; we curate legacies.'
+  }
 ];
 
 export const testimonials = [
   {
-    quote:
-      'Marou made our wedding day feel calm and organized. We were able to enjoy the ceremony and reception because every cue was handled.',
-    author: 'Queen\'s Banquet couple',
-    event: 'Wedding coordination',
-    photoUrl: '/testimonial-couple-1.svg',
+    quote: 'An orchestration of pure magic. Every detail was handled with a level of discretion and artistry that is simply unmatched in the industry.',
+    author: 'THE DUCHESS OF ESSEX',
+    event: 'Mayfair, London',
   },
   {
-    quote:
-      'The program flowed smoothly from preparation to reception. Suppliers knew where to go and our families felt guided the whole time.',
-    author: 'Client family',
-    event: 'Reception program support',
-    photoUrl: '/testimonial-family-1.svg',
+    quote: 'The gold standard of elegance. Our gala was not just an event; it was a masterpiece that our guests are still talking about months later.',
+    author: 'AURELIA & JULIAN',
+    event: 'Villa d\'Este, Lake Como',
   },
   {
-    quote:
-      'Our meeting with Marou helped us understand what still needed attention. The checklist made the final weeks less stressful.',
-    author: 'Bride-to-be',
-    event: 'Planning consultation',
-    photoUrl: '/testimonial-bride-1.svg',
+    quote: 'Their ability to transform a heritage estate into a contemporary wonderland while respecting its history is truly a rare gift.',
+    author: 'MAXIMILIAN VON BERG',
+    event: 'Bavarian Alps',
   },
 ];
 
@@ -146,7 +151,7 @@ export const defaultLandingContent = {
   heroContent,
   highlights,
   services,
-  galleryMoments,
+
   packages,
   experienceContent,
   experiencePoints,
