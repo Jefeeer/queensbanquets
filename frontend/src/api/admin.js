@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from './fetchWithTimeout.js';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 export const ADMIN_TOKEN_KEY = 'queens-banquet-admin-token';
 
@@ -25,11 +27,15 @@ export async function loginAdmin(credentials) {
     return { offline: true };
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(credentials),
-  });
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/admin/login`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    },
+    5000,
+  );
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Invalid admin email or password.' }));
@@ -44,9 +50,14 @@ export async function fetchCurrentAdmin(token) {
     return null;
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/me`, {
-    headers: buildHeaders(token),
-  });
+  // 3500ms timeout for admin session check
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/admin/me`,
+    {
+      headers: buildHeaders(token),
+    },
+    3500,
+  );
 
   if (!response.ok) {
     throw new Error('Admin session expired.');
@@ -64,11 +75,15 @@ export async function changeAdminPassword(payload, token) {
     throw new Error('Admin session expired. Please sign in again.');
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/password`, {
-    method: 'PATCH',
-    headers: buildHeaders(token),
-    body: JSON.stringify(payload),
-  });
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/admin/password`,
+    {
+      method: 'PATCH',
+      headers: buildHeaders(token),
+      body: JSON.stringify(payload),
+    },
+    5000,
+  );
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Unable to update password.' }));
@@ -83,9 +98,13 @@ export async function fetchAdminInquiries(token) {
     return [];
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/inquiries`, {
-    headers: buildHeaders(token),
-  });
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/admin/inquiries`,
+    {
+      headers: buildHeaders(token),
+    },
+    4500,
+  );
 
   if (!response.ok) {
     throw new Error('Unable to load inquiries.');
@@ -100,11 +119,15 @@ export async function updateAdminInquiryStatus(id, status, token) {
     throw new Error('Connect the API to manage inquiries.');
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/inquiries/${id}/status`, {
-    method: 'PATCH',
-    headers: buildHeaders(token),
-    body: JSON.stringify({ status }),
-  });
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/admin/inquiries/${id}/status`,
+    {
+      method: 'PATCH',
+      headers: buildHeaders(token),
+      body: JSON.stringify({ status }),
+    },
+    5000,
+  );
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Unable to update inquiry status.' }));
@@ -120,9 +143,13 @@ export async function fetchAdminAnalytics(token) {
     return null;
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/analytics`, {
-    headers: buildHeaders(token),
-  });
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/admin/analytics`,
+    {
+      headers: buildHeaders(token),
+    },
+    4500,
+  );
 
   if (!response.ok) {
     throw new Error('Unable to load analytics.');
@@ -131,3 +158,4 @@ export async function fetchAdminAnalytics(token) {
   const data = await response.json();
   return data.analytics ?? null;
 }
+

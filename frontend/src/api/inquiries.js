@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from './fetchWithTimeout.js';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 export async function submitInquiry(payload) {
@@ -10,13 +12,17 @@ export async function submitInquiry(payload) {
     };
   }
 
-  const response = await fetch(`${API_BASE_URL}/inquiries`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/inquiries`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
     },
-    body: JSON.stringify(payload),
-  });
+    7000,
+  );
 
   if (!response.ok) {
     throw new Error('Unable to submit your inquiry right now.');
@@ -24,3 +30,4 @@ export async function submitInquiry(payload) {
 
   return response.json();
 }
+

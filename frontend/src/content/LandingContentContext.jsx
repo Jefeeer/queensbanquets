@@ -85,6 +85,13 @@ export function LandingContentProvider({ children }) {
 
     let cancelled = false;
 
+    // Safety fallback timer: dismiss preloader after max 2.5s if backend is waking up / slow
+    const fallbackTimer = window.setTimeout(() => {
+      if (!cancelled) {
+        setIsHydrating(false);
+      }
+    }, 2500);
+
     async function hydrateFromApi() {
       try {
         const token = getStoredAdminToken();
@@ -113,6 +120,7 @@ export function LandingContentProvider({ children }) {
       } catch (error) {
         console.warn('Using local landing content because the API is unavailable.', error);
       } finally {
+        window.clearTimeout(fallbackTimer);
         if (!cancelled) {
           setIsHydrating(false);
         }
@@ -123,6 +131,7 @@ export function LandingContentProvider({ children }) {
 
     return () => {
       cancelled = true;
+      window.clearTimeout(fallbackTimer);
     };
   }, []);
 

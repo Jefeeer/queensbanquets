@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from './fetchWithTimeout.js';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 function buildHeaders(token) {
@@ -21,7 +23,8 @@ export async function fetchLandingContent() {
     return null;
   }
 
-  const response = await fetch(`${API_BASE_URL}/content`);
+  // 3500ms timeout for landing content fetch
+  const response = await fetchWithTimeout(`${API_BASE_URL}/content`, {}, 3500);
 
   if (!response.ok) {
     throw new Error('Unable to load landing content.');
@@ -36,11 +39,15 @@ export async function saveLandingContent(content, token) {
     return { offline: true, content };
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/content`, {
-    method: 'PUT',
-    headers: buildHeaders(token),
-    body: JSON.stringify({ content }),
-  });
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/admin/content`,
+    {
+      method: 'PUT',
+      headers: buildHeaders(token),
+      body: JSON.stringify({ content }),
+    },
+    6000,
+  );
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
@@ -55,10 +62,14 @@ export async function resetLandingContentRemote(token) {
     return null;
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/content/reset`, {
-    method: 'POST',
-    headers: buildHeaders(token),
-  });
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/admin/content/reset`,
+    {
+      method: 'POST',
+      headers: buildHeaders(token),
+    },
+    6000,
+  );
 
   if (!response.ok) {
     throw new Error('Unable to reset landing content.');
@@ -66,3 +77,4 @@ export async function resetLandingContentRemote(token) {
 
   return response.json();
 }
+

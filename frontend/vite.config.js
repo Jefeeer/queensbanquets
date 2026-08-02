@@ -9,4 +9,9 @@ export default defineConfig({
   plugins: [react()],
   // Load .env from monorepo root so VITE_API_BASE_URL works
   envDir: path.resolve(__dirname, '..'),
+  server: {
+    port: 5173,
+    strictPort: true,
+    host: true,
+  },
 });
